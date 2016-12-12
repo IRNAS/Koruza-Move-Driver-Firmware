@@ -24,7 +24,7 @@ void setup()
   stepper1.setAcceleration(100);
   stepper1.enableOutputs();
 
-  delay(5000);
+  //delay(5000);
 }
 
 double phase_unwrap(const double angle_0_2pi)
@@ -124,15 +124,17 @@ int wrap (int value, const int min_value, const int max_value)
 int calculate_step(double senzor_reading)
 {
   int motor_step = (senzor_reading - start_point) * (double)end_step / (end_point - start_point);
-  motor_step = wrap(motor_step, 0, end_step);
+  motor_step = wrap(motor_step, 0, end_step) - 200;
   return (motor_step);
 }
 
 void loop()
 {
+  delay(5000);
+  
   calibrate();
 
-  stepper1.moveTo(2000);
+  stepper1.moveTo(500);
 
   double sezor_reading = 0.0;
 
@@ -143,6 +145,7 @@ void loop()
     if (!stepper1.isRunning())
     {
       while (!sensor1.update());
+      
       sezor_reading = sensor1.m_dPhi_yz;
       Serial.print(sezor_reading);
       Serial.print(";");
@@ -152,7 +155,15 @@ void loop()
     }
   }
 
+  stepper1.moveTo(0);
+
+   while (true)
+  {
+    stepper1.run();
+    if (!stepper1.isRunning()) break;
+  }
+  
   stepper1.disableOutputs();
 
-  while (true);
+  while(true);
 }
