@@ -24,7 +24,7 @@ The last layer is the application layer where the main state machine is implemen
 The firmware upgrade is done through the UART and MCU bootloader, after that the MCU restarts for the new firmware to boot. The MCU can be rebooted (hard restart) asynchronously. 
 
 ### Communication
-Koruza move driver is using the UART for communicating with the rest of the Koruza unit. A chosen protocol is based on TLV. All nessesery documentation for communication is in [TLV communication](link2) file.
+Koruza move driver is using the UART for communicating with the rest of the Koruza unit. A chosen protocol is based on TLV. All nessesery documentation for communication is in [TLV communication](https://github.com/IRNAS/Koruza-Move-Driver-Firmware/blob/docs/TLV_communication.md) file.
 
 ---
 
