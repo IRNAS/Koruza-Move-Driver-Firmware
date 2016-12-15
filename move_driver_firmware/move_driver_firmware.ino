@@ -1,6 +1,7 @@
 #include "switch.h" // https://github.com/IRNAS/Arduino-Switch-Debounce
 #include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
+#include "Wire.h"
 
 const int limit_switch1_pin = 3;
 const int limit_switch2_pin = 4;
@@ -11,11 +12,12 @@ Switch limit_switch2(limit_switch2_pin, LOW, false, switch_debounce_delay);
 
 const int unused_gpio_pin = 2;
 
+TLV493D sensor1;
+TLV493D sensor2;
+
 const int sensor1_pwr_pin = A2;
 const int sensor2_pwr_pin = A3;
-
-TLV493D sensor1(sensor1_pwr_pin);
-TLV493D sensor2(sensor2_pwr_pin);
+const int i2c_sda = A4;
 
 const int stepper1_a_pin = 5;
 const int stepper1_b_pin = 6;
@@ -36,8 +38,37 @@ void setup()
 
   pinMode(unused_gpio_pin, INPUT);
 
-  sensor1.init(LOW);
-  sensor2.init(HIGH);
+  pinMode(sensor1_pwr_pin, OUTPUT);
+  pinMode(sensor2_pwr_pin, OUTPUT);
+  pinMode(i2c_sda, OUTPUT);
+
+  digitalWrite(sensor1_pwr_pin, LOW);
+  digitalWrite(sensor2_pwr_pin, LOW);
+  digitalWrite(i2c_sda, LOW);
+
+  delay(100);
+
+  //init sensor1
+  digitalWrite(sensor1_pwr_pin, HIGH);
+  digitalWrite(i2c_sda, LOW); //0x1F
+  Serial.println("Starting sensor 1");
+  delay(500);
+
+  //init sensor2
+  digitalWrite(sensor2_pwr_pin, HIGH);
+  digitalWrite(i2c_sda, HIGH); //0x5E
+  Serial.println("Starting sensor 2");
+  delay(500);
+
+  Wire.begin(); // Begin I2C wire communication
+
+  //initialize sensor 1
+  Serial.print("Initializing sensor 1: 0x");
+  Serial.println(sensor1.init(LOW), HEX);
+
+  //initialize sensor 2
+  Serial.print("Initializing sensor 2: 0x");
+  Serial.println(sensor2.init(HIGH), HEX);
 
   stepper1.setMaxSpeed(100);
   stepper1.setSpeed(10);
@@ -54,6 +85,17 @@ void setup()
 
 void loop()
 {
+  if(limit_switch1.get_button_state())
+  {
+    Serial.println("Limit switch 1 pressed.");
+    return;
+  }
+  if(limit_switch2.get_button_state())
+  {
+    Serial.println("Limit switch 2 pressed.");
+    return;
+  }
+  
   sensor1.update();
   Serial.println("sensor1:");
 
@@ -91,9 +133,6 @@ void loop()
   Serial.print(sensor2.m_dPhi_xz);
   Serial.print(";");//\t");
   Serial.println(sensor2.m_dMag_2);
-  
-  if(limit_switch1.get_button_state()) Serial.println("Limit switch 1 pressed.");
-  if(limit_switch2.get_button_state()) Serial.println("Limit switch 2 pressed.");
   
   stepper1.run();
   stepper2.run();
