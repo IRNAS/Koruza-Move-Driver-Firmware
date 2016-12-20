@@ -3,8 +3,8 @@
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
 #include "Wire.h"
 
-const int limit_switch1_pin = 3;
-const int limit_switch2_pin = 4;
+const int limit_switch1_pin = 4;
+const int limit_switch2_pin = 3;
 const unsigned long switch_debounce_delay = 50; //ms
 
 Switch limit_switch1(limit_switch1_pin, LOW, false, switch_debounce_delay);
@@ -70,70 +70,89 @@ void setup()
   Serial.print("Initializing sensor 2: 0x");
   Serial.println(sensor2.init(HIGH), HEX);
 
-  stepper1.setMaxSpeed(100);
-  stepper1.setSpeed(10);
-  stepper1.setAcceleration(100);
-  stepper1.moveTo(10000);
+  stepper1.setCurrentPosition(0);
+  stepper1.setMaxSpeed(1000);
+  stepper1.setSpeed(100);
+  stepper1.setAcceleration(50);
+  stepper1.move(-1000000);
   stepper1.enableOutputs();
 
-  stepper2.setMaxSpeed(100);
-  stepper2.setSpeed(10);
-  stepper2.setAcceleration(100);
-  stepper2.moveTo(10000);
+  stepper2.setCurrentPosition(0);
+  stepper2.setMaxSpeed(1000);
+  stepper2.setSpeed(100);
+  stepper2.setAcceleration(50);
+  stepper2.move(-1000000);
   stepper2.enableOutputs();
 }
 
 void loop()
 {
-  if(limit_switch1.get_button_state())
+  if((limit_switch1.get_button_state() == true) && (stepper1.distanceToGo() < 0))
   {
     Serial.println("Limit switch 1 pressed.");
+    delay(5000);
+    stepper1.setCurrentPosition(0);
+    stepper1.setMaxSpeed(1000);
+    stepper1.setSpeed(100);
+    stepper1.setAcceleration(50);
+    stepper1.move(10000);
     return;
   }
-  if(limit_switch2.get_button_state())
+  
+  if((limit_switch2.get_button_state() == true) && (stepper2.distanceToGo() < 0))
   {
     Serial.println("Limit switch 2 pressed.");
+    delay(5000);
+    stepper2.setCurrentPosition(0);
+    stepper2.setMaxSpeed(1000);
+    stepper2.setSpeed(100);
+    stepper2.setAcceleration(50);
+    stepper2.move(10000);
     return;
   }
   
-  sensor1.update();
-  Serial.println("sensor1:");
+//  sensor1.update();
+//  Serial.println("sensor1:");
 
-  Serial.print(sensor1.m_dBx);
-  Serial.print(";");//\t");
-  Serial.print(sensor1.m_dBy);
-  Serial.print(";");//\t");
-  Serial.print(sensor1.m_dBz);
-  Serial.print(";");//\t");
-  Serial.println(sensor1.m_dTemp);
+//  Serial.print(sensor1.m_dBx);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor1.m_dBy);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor1.m_dBz);
+//  Serial.print(";");//\t");
+//  Serial.println(sensor1.m_dTemp);
 
-  Serial.print(sensor1.m_dPhi_xy);
-  Serial.print(";");//\t");
-  Serial.print(sensor1.m_dPhi_yz);
-  Serial.print(";");//\t");
-  Serial.print(sensor1.m_dPhi_xz);
-  Serial.print(";");//\t");
-  Serial.println(sensor1.m_dMag_2);
+//  Serial.print(sensor1.m_dPhi_xy);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor1.m_dPhi_yz);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor1.m_dPhi_xz);
+//  Serial.print(";");//\t");
+//  Serial.println(sensor1.m_dMag_2);
 
-  sensor2.update();
-  Serial.println("sensor2:");
+//  sensor2.update();
+//  Serial.println("sensor2:");
 
-  Serial.print(sensor2.m_dBx);
-  Serial.print(";");//\t");
-  Serial.print(sensor2.m_dBy);
-  Serial.print(";");//\t");
-  Serial.print(sensor2.m_dBz);
-  Serial.print(";");//\t");
-  Serial.println(sensor2.m_dTemp);
+//  Serial.print(sensor2.m_dBx);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor2.m_dBy);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor2.m_dBz);
+//  Serial.print(";");//\t");
+//  Serial.println(sensor2.m_dTemp);
 
-  Serial.print(sensor2.m_dPhi_xy);
-  Serial.print(";");//\t");
-  Serial.print(sensor2.m_dPhi_yz);
-  Serial.print(";");//\t");
-  Serial.print(sensor2.m_dPhi_xz);
-  Serial.print(";");//\t");
-  Serial.println(sensor2.m_dMag_2);
-  
+//  Serial.print(sensor2.m_dPhi_xy);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor2.m_dPhi_yz);
+//  Serial.print(";");//\t");
+//  Serial.print(sensor2.m_dPhi_xz);
+//  Serial.print(";");//\t");
+//  Serial.println(sensor2.m_dMag_2);
+
+
+  if(stepper1.distanceToGo() != 0) Serial.println("Stepper 1 moving.");
   stepper1.run();
+
+  if(stepper2.distanceToGo() != 0) Serial.println("Stepper 2 moving.");
   stepper2.run();
 }
