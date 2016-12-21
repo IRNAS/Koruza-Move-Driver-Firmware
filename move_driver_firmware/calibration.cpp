@@ -97,10 +97,11 @@ uint8_t Calibration::calibrate(const long N_points)
   Serial.print("Starting step: ");
   Serial.println(m_start_step);
 
+  m_stepper.setSpeed(100);
+  m_stepper.setAcceleration(50);
+
   for (long i = 0; i < N_points; i++)
   {
-    m_stepper.setSpeed(100);
-    m_stepper.setAcceleration(50);
     m_stepper.move(i * m_steps_per_revolution / (N_points - 1));
 
     while (true)
@@ -114,7 +115,7 @@ uint8_t Calibration::calibrate(const long N_points)
         while (count_tries > 0)
         {
           status_sensor = m_sensor.update();
-          if ((status_sensor != 0x01) && (status_sensor != 0x02)) break;
+          if (status_sensor != 0x02) break;
           count_tries --;
         }
         if (status_sensor != 0x00) return status_sensor; // error
@@ -126,7 +127,13 @@ uint8_t Calibration::calibrate(const long N_points)
 
         angle_meas_unwrap = phase_unwrap(m_sensor.m_dPhi_yz, prev_value, interval);
         prev_value = angle_meas_unwrap;
-        Serial.println(angle_meas_unwrap, 10);
+        Serial.print(angle_meas_unwrap, 10);
+        Serial.print(";");
+        Serial.print(m_sensor.m_dPhi_xy, 10);
+        Serial.print(";");
+        Serial.print(m_sensor.m_dPhi_yz, 10);
+        Serial.print(";");
+        Serial.println(m_sensor.m_dPhi_xz, 10);
 
         break;
       }

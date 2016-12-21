@@ -43,6 +43,9 @@ void error_handler(String error_message)
 {
   while (true)
   {
+    stepper1.disableOutputs();
+    stepper2.disableOutputs();
+    
     Serial.println("Error occured!");
     Serial.println(error_message);
   }
@@ -69,13 +72,13 @@ void setup()
 
   // sensor1 power-up
   digitalWrite(sensor1_pwr_pin, HIGH);
-  digitalWrite(i2c_sda, LOW); //0x1F
+  digitalWrite(i2c_sda, LOW); // adress = 0x1F
   Serial.println("Sensor 1 powered up.");
   delay(500);
 
   // sensor2 power-up
   digitalWrite(sensor2_pwr_pin, HIGH);
-  digitalWrite(i2c_sda, HIGH); //0x5E
+  digitalWrite(i2c_sda, HIGH); // adress = 0x5E
   Serial.println("Sensor 2 powered up.");
   delay(500);
 
@@ -83,27 +86,13 @@ void setup()
 
 
   // initialize sensor 1
-  uint8_t count_tries = 100;
-  uint8_t status_sensor = 0x00;
-  while (count_tries > 0)
-  {
-    status_sensor = sensor1.init(LOW);
-    if (status_sensor != 0x05) break;
-    count_tries --;
-  }
+  uint8_t status_sensor = sensor1.init(LOW); // adress = 0x1F
   if (status_sensor == 0x00) Serial.println("Sensor 1 initialized.");
   else error_handler("Sensor 1 failed to intialize: 0x" + String(status_sensor, HEX));
 
 
   // initialize sensor 2
-  count_tries = 100;
-  status_sensor = 0x00;
-  while (count_tries > 0)
-  {
-    status_sensor = sensor2.init(HIGH);
-    if (status_sensor != 0x05) break;
-    count_tries --;
-  }
+  status_sensor = sensor2.init(HIGH); // adress = 0x5E
   if (status_sensor == 0x00) Serial.println("Sensor 2 initialized.");
   else error_handler("Sensor 2 failed to intialize: 0x" + String(status_sensor, HEX));
 
@@ -128,25 +117,47 @@ void loop()
 
   // calibrate sensor 1
   Serial.println("Starting sensor 1 calibration.");
-  uint8_t calibration_status = 0x00;
-  calibration_status = calibration1.calibrate(9);
+  uint8_t calibration_status = calibration1.calibrate(100); // 9 points used
   if (calibration_status == 0x00) Serial.println("Sensor 1 calibrated.");
   else error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
 
+  // calibrate sensor 2
+  Serial.println("Starting sensor 2 calibration.");
+  calibration_status = calibration2.calibrate(100); // 9 points used
+  if (calibration_status == 0x00) Serial.println("Sensor 2 calibrated.");
+  else error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
+
+
+  // try to update sensor value
   int count_tries = 100;
   uint8_t status_sensor = 0x00;
 
-  // try to update sensor value
   while (count_tries > 0)
   {
     status_sensor = sensor1.update();
-    if ((status_sensor != 0x01) && (status_sensor != 0x02)) break;
+    if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
     count_tries --;
   }
   if (status_sensor != 0x00) error_handler("Sensor 1 failed to update: 0x" + String(status_sensor, HEX)); // error
 
   Serial.print("Sensor 1 value: ");
   Serial.println(sensor1.m_dPhi_yz);
+
+
+  // try to update sensor value
+  count_tries = 100;
+  status_sensor = 0x00;
+
+  while (count_tries > 0)
+  {
+    status_sensor = sensor2.update();
+    if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
+    count_tries --;
+  }
+  if (status_sensor != 0x00) error_handler("Sensor 2 failed to update: 0x" + String(status_sensor, HEX)); // error
+
+  Serial.print("Sensor 2 value: ");
+  Serial.println(sensor2.m_dPhi_yz);
 
   while(true);
 }
