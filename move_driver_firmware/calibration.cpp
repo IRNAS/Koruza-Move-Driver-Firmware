@@ -90,7 +90,7 @@ uint8_t Calibration::calibrate(const long N_points)
   long interval = 0;
   double prev_value = 0.0;
 
-  int count_tries = 100;
+  int count_tries = 1000;
   uint8_t status_sensor = 0x00;
 
   m_start_step = m_stepper.currentPosition();
@@ -99,10 +99,11 @@ uint8_t Calibration::calibrate(const long N_points)
 
   m_stepper.setSpeed(100);
   m_stepper.setAcceleration(50);
+  m_stepper.enableOutputs();
 
   for (long i = 0; i < N_points; i++)
   {
-    m_stepper.move(i * m_steps_per_revolution / (N_points - 1));
+    m_stepper.moveTo(m_start_step + i * m_steps_per_revolution / (N_points - 1));
 
     while (true)
     {
@@ -120,20 +121,23 @@ uint8_t Calibration::calibrate(const long N_points)
         }
         if (status_sensor != 0x00) return status_sensor; // error
 
-        if (i == 0) prev_value = m_sensor.m_dPhi_yz;
+        if (i == 0) prev_value = m_sensor.m_dPhi_xz;
 
         Serial.print(i * m_steps_per_revolution / (N_points - 1));
         Serial.print(";");
 
-        angle_meas_unwrap = phase_unwrap(m_sensor.m_dPhi_yz, prev_value, interval);
+        angle_meas_unwrap = phase_unwrap(m_sensor.m_dPhi_xz, prev_value, interval);
         prev_value = angle_meas_unwrap;
+        
         Serial.print(angle_meas_unwrap, 10);
         Serial.print(";");
         Serial.print(m_sensor.m_dPhi_xy, 10);
         Serial.print(";");
         Serial.print(m_sensor.m_dPhi_yz, 10);
         Serial.print(";");
-        Serial.println(m_sensor.m_dPhi_xz, 10);
+        Serial.print(m_sensor.m_dPhi_xz, 10);
+        Serial.print(";");
+        Serial.println(m_sensor.m_dMag_2, 10);
 
         break;
       }
@@ -167,7 +171,7 @@ uint8_t Calibration::calculate_step(const double sensor_reading, long& motor_ste
   //  0x00 = OK
   //  0x01 = invalid wrap function parameters
 
-  motor_step = -200 /*+ m_start_step*/ + (long)( (sensor_reading - m_start_point) * (double)m_steps_per_revolution / (m_end_point - m_start_point) );
+  motor_step = -100 /*+ m_start_step*/ + (long)( (sensor_reading - m_start_point) * (double)m_steps_per_revolution / (m_end_point - m_start_point) );
 
   if (wrap(motor_step, 0, m_steps_per_revolution) != 0x00) return 0x01; // error
 

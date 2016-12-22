@@ -31,8 +31,8 @@ const int stepper2_b_pin = 9;
 const int stepper2_c_pin = A0;
 const int stepper2_d_pin = A1;
 
-AccelStepper stepper1(AccelStepper::FULL4WIRE, stepper1_a_pin, stepper1_c_pin, stepper1_b_pin, stepper1_d_pin, false);
-AccelStepper stepper2(AccelStepper::FULL4WIRE, stepper2_a_pin, stepper2_c_pin, stepper2_b_pin, stepper2_d_pin, false);
+AccelStepper stepper1(AccelStepper::HALF4WIRE, stepper1_a_pin, stepper1_c_pin, stepper1_b_pin, stepper1_d_pin, false);
+AccelStepper stepper2(AccelStepper::HALF4WIRE, stepper2_a_pin, stepper2_c_pin, stepper2_b_pin, stepper2_d_pin, false);
 
 
 Calibration calibration1(limit_switch1, sensor1, stepper1);
@@ -115,21 +115,23 @@ void loop()
   // homing sequence on both axes
   homing();
 
+
   // calibrate sensor 1
   Serial.println("Starting sensor 1 calibration.");
-  uint8_t calibration_status = calibration1.calibrate(100); // 9 points used
+  uint8_t calibration_status = calibration1.calibrate(25); // 9 points used
   if (calibration_status == 0x00) Serial.println("Sensor 1 calibrated.");
   else error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
 
   // calibrate sensor 2
   Serial.println("Starting sensor 2 calibration.");
-  calibration_status = calibration2.calibrate(100); // 9 points used
+  calibration_status = calibration2.calibrate(25); // 9 points used
   if (calibration_status == 0x00) Serial.println("Sensor 2 calibrated.");
   else error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
+  
 
 
   // try to update sensor value
-  int count_tries = 100;
+  int count_tries = 1000;
   uint8_t status_sensor = 0x00;
 
   while (count_tries > 0)
@@ -141,11 +143,17 @@ void loop()
   if (status_sensor != 0x00) error_handler("Sensor 1 failed to update: 0x" + String(status_sensor, HEX)); // error
 
   Serial.print("Sensor 1 value: ");
-  Serial.println(sensor1.m_dPhi_yz);
+  Serial.println(sensor1.m_dPhi_xz);
+
+  long motor_step = 0;
+  calibration1.calculate_step(sensor1.m_dPhi_xz, motor_step);
+  Serial.print("Motor 1 step: ");
+  Serial.println(motor_step);
+  
 
 
   // try to update sensor value
-  count_tries = 100;
+  count_tries = 1000;
   status_sensor = 0x00;
 
   while (count_tries > 0)
@@ -157,7 +165,13 @@ void loop()
   if (status_sensor != 0x00) error_handler("Sensor 2 failed to update: 0x" + String(status_sensor, HEX)); // error
 
   Serial.print("Sensor 2 value: ");
-  Serial.println(sensor2.m_dPhi_yz);
+  Serial.println(sensor2.m_dPhi_xz);
+
+  motor_step = 0;
+  calibration2.calculate_step(sensor2.m_dPhi_xz, motor_step);
+  Serial.print("Motor 2 step: ");
+  Serial.println(motor_step);
+  
 
   while(true);
 }
