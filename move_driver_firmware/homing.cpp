@@ -30,7 +30,7 @@ void homing()
   {
     if ((limit_switch1.get_button_state() == true) && (stepper1.distanceToGo() < 0))
     {
-      Serial.println("Limit switch 1 pressed.");
+      //Serial.println("Limit switch 1 pressed.");
       delay(1000);
       stepper1.setCurrentPosition(0);
       stepper1.setMaxSpeed(1000);
@@ -42,7 +42,7 @@ void homing()
 
     if ((limit_switch2.get_button_state() == true) && (stepper2.distanceToGo() < 0))
     {
-      Serial.println("Limit switch 2 pressed.");
+      //Serial.println("Limit switch 2 pressed.");
       delay(1000);
       stepper2.setCurrentPosition(0);
       stepper2.setMaxSpeed(1000);
@@ -52,10 +52,10 @@ void homing()
       continue;
     }
 
-    if (stepper1.distanceToGo() != 0) Serial.println("Stepper 1 moving.");
+    //if (stepper1.distanceToGo() != 0) Serial.println("Stepper 1 moving.");
     stepper1.run();
 
-    if (stepper2.distanceToGo() != 0) Serial.println("Stepper 2 moving.");
+    //if (stepper2.distanceToGo() != 0) Serial.println("Stepper 2 moving.");
     stepper2.run();
 
     if (stepper1.distanceToGo() == 0)

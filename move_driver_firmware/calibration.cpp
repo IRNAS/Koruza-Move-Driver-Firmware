@@ -82,7 +82,7 @@ uint8_t Calibration::calibrate(const long N_points)
   //  0x03 = invalid num. of points given
   //  0x04 = limit switch pressed
 
-  Serial.println("Calibration started.");
+  //Serial.println("Calibration started.");
 
   if ((N_points > m_steps_per_revolution) || (N_points < 2)) return 0x03; // error
 
@@ -94,8 +94,8 @@ uint8_t Calibration::calibrate(const long N_points)
   uint8_t status_sensor = 0x00;
 
   m_start_step = m_stepper.currentPosition();
-  Serial.print("Starting step: ");
-  Serial.println(m_start_step);
+  //Serial.print("Starting step: ");
+  //Serial.println(m_start_step);
 
   m_stepper.setSpeed(100);
   m_stepper.setAcceleration(50);
@@ -123,21 +123,21 @@ uint8_t Calibration::calibrate(const long N_points)
 
         if (i == 0) prev_value = m_sensor.m_dPhi_xz;
 
-        Serial.print(i * m_steps_per_revolution / (N_points - 1));
-        Serial.print(";");
+        //Serial.print(i * m_steps_per_revolution / (N_points - 1));
+        //Serial.print(";");
 
         angle_meas_unwrap = phase_unwrap(m_sensor.m_dPhi_xz, prev_value, interval);
         prev_value = angle_meas_unwrap;
         
-        Serial.print(angle_meas_unwrap, 10);
-        Serial.print(";");
-        Serial.print(m_sensor.m_dPhi_xy, 10);
-        Serial.print(";");
-        Serial.print(m_sensor.m_dPhi_yz, 10);
-        Serial.print(";");
-        Serial.print(m_sensor.m_dPhi_xz, 10);
-        Serial.print(";");
-        Serial.println(m_sensor.m_dMag_2, 10);
+        //Serial.print(angle_meas_unwrap, 10);
+        //Serial.print(";");
+        //Serial.print(m_sensor.m_dPhi_xy, 10);
+        //Serial.print(";");
+        //Serial.print(m_sensor.m_dPhi_yz, 10);
+        //Serial.print(";");
+        //Serial.print(m_sensor.m_dPhi_xz, 10);
+        //Serial.print(";");
+        //Serial.println(m_sensor.m_dMag_2, 10);
 
         break;
       }

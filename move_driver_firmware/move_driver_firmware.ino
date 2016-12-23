@@ -4,6 +4,7 @@
 #include "Wire.h"
 #include "homing.h"
 #include "calibration.h"
+#include "EEPROM_manager.h"
 
 const int limit_switch1_pin = 4;
 const int limit_switch2_pin = 3;
@@ -72,29 +73,29 @@ void setup()
 
   // sensor1 power-up
   digitalWrite(sensor1_pwr_pin, HIGH);
-  digitalWrite(i2c_sda, LOW); // adress = 0x1F
-  Serial.println("Sensor 1 powered up.");
+  digitalWrite(i2c_sda, LOW); // address = 0x1F
+  //Serial.println("Sensor 1 powered up.");
   delay(500);
 
   // sensor2 power-up
   digitalWrite(sensor2_pwr_pin, HIGH);
-  digitalWrite(i2c_sda, HIGH); // adress = 0x5E
-  Serial.println("Sensor 2 powered up.");
+  digitalWrite(i2c_sda, HIGH); // address = 0x5E
+  //Serial.println("Sensor 2 powered up.");
   delay(500);
 
   Wire.begin(); // begin I2C communication
 
 
   // initialize sensor 1
-  uint8_t status_sensor = sensor1.init(LOW); // adress = 0x1F
-  if (status_sensor == 0x00) Serial.println("Sensor 1 initialized.");
-  else error_handler("Sensor 1 failed to intialize: 0x" + String(status_sensor, HEX));
+  uint8_t status_sensor = sensor1.init(LOW); // address = 0x1F
+  if (status_sensor != 0x00) error_handler("Sensor 1 failed to intialize: 0x" + String(status_sensor, HEX));
+  //else Serial.println("Sensor 1 initialized.");
 
 
   // initialize sensor 2
-  status_sensor = sensor2.init(HIGH); // adress = 0x5E
-  if (status_sensor == 0x00) Serial.println("Sensor 2 initialized.");
-  else error_handler("Sensor 2 failed to intialize: 0x" + String(status_sensor, HEX));
+  status_sensor = sensor2.init(HIGH); // address = 0x5E
+  if (status_sensor != 0x00) error_handler("Sensor 2 failed to intialize: 0x" + String(status_sensor, HEX));
+  //else Serial.println("Sensor 2 initialized.");
 
 
   // initialize stepper motor 1
@@ -108,6 +109,10 @@ void setup()
   stepper2.disableOutputs();
 
   delay(1000);
+
+  ///TEST !!!
+  EEPROMsave();
+  if(EEPROMload()) error_handler("EEPROM error.");
 }
 
 void loop()
@@ -118,15 +123,15 @@ void loop()
 
   // calibrate sensor 1
   Serial.println("Starting sensor 1 calibration.");
-  uint8_t calibration_status = calibration1.calibrate(25); // 9 points used
-  if (calibration_status == 0x00) Serial.println("Sensor 1 calibrated.");
-  else error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
+  uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
+  if (calibration_status != 0x00) error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
+  else Serial.println("Sensor 1 calibrated.");
 
   // calibrate sensor 2
   Serial.println("Starting sensor 2 calibration.");
-  calibration_status = calibration2.calibrate(25); // 9 points used
-  if (calibration_status == 0x00) Serial.println("Sensor 2 calibrated.");
-  else error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
+  calibration_status = calibration2.calibrate(9); // 9 points used
+  if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
+  else Serial.println("Sensor 2 calibrated.");
   
 
 
@@ -142,8 +147,8 @@ void loop()
   }
   if (status_sensor != 0x00) error_handler("Sensor 1 failed to update: 0x" + String(status_sensor, HEX)); // error
 
-  Serial.print("Sensor 1 value: ");
-  Serial.println(sensor1.m_dPhi_xz);
+  //Serial.print("Sensor 1 value: ");
+  //Serial.println(sensor1.m_dPhi_xz);
 
   long motor_step = 0;
   calibration1.calculate_step(sensor1.m_dPhi_xz, motor_step);
@@ -164,8 +169,8 @@ void loop()
   }
   if (status_sensor != 0x00) error_handler("Sensor 2 failed to update: 0x" + String(status_sensor, HEX)); // error
 
-  Serial.print("Sensor 2 value: ");
-  Serial.println(sensor2.m_dPhi_xz);
+  //Serial.print("Sensor 2 value: ");
+  //Serial.println(sensor2.m_dPhi_xz);
 
   motor_step = 0;
   calibration2.calculate_step(sensor2.m_dPhi_xz, motor_step);
