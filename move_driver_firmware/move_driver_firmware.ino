@@ -132,6 +132,35 @@ void loop()
   calibration_status = calibration2.calibrate(9); // 9 points used
   if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
   else Serial.println("Sensor 2 calibrated.");
+
+
+
+  // move motor to some position
+  stepper1.move(800);
+  stepper1.enableOutputs();
+  
+  while (true)
+  {
+    if (limit_switch1.get_button_state() == true) error_handler("Limit switch 1 pressed.");
+    stepper1.run();
+    if (!stepper1.isRunning()) break;
+  }
+  
+  stepper1.disableOutputs();
+
+
+  // move motor to some position
+  stepper2.move(800);
+  stepper2.enableOutputs();
+  
+  while (true)
+  {
+    if (limit_switch2.get_button_state() == true) error_handler("Limit switch 2 pressed.");
+    stepper2.run();
+    if (!stepper2.isRunning()) break;
+  }
+  
+  stepper2.disableOutputs();
   
 
 
