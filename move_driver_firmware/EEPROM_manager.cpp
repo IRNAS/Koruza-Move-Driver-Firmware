@@ -39,49 +39,49 @@ void EEPROMsave()
 {
   unsigned long address = 0;
   
-  Serial.print("stepper1.currentPosition: ");
-  Serial.println(stepper1.currentPosition());
+//  Serial.print("stepper1.currentPosition: ");
+//  Serial.println(stepper1.currentPosition());
   EEPROM.put(address, stepper1.currentPosition());
   address += sizeof(long);
 
-  Serial.print("stepper2.currentPosition: ");
-  Serial.println(stepper2.currentPosition());
+//  Serial.print("stepper2.currentPosition: ");
+//  Serial.println(stepper2.currentPosition());
   EEPROM.put(address, stepper2.currentPosition());
   address += sizeof(long);
 
-  Serial.print("calibration1.m_start_step: ");
-  Serial.println(calibration1.m_start_step);
+//  Serial.print("calibration1.m_start_step: ");
+//  Serial.println(calibration1.m_start_step);
   EEPROM.put(address, calibration1.m_start_step);
   address += sizeof(long);
 
-  Serial.print("calibration2.m_start_step: ");
-  Serial.println(calibration2.m_start_step);
+//  Serial.print("calibration2.m_start_step: ");
+//  Serial.println(calibration2.m_start_step);
   EEPROM.put(address, calibration2.m_start_step);
   address += sizeof(long);
 
-  Serial.print("calibration1.m_start_point: ");
-  Serial.println(calibration1.m_start_point);
+//  Serial.print("calibration1.m_start_point: ");
+//  Serial.println(calibration1.m_start_point);
   EEPROM.put(address, calibration1.m_start_point);
   address += sizeof(double);
 
-  Serial.print("calibration2.m_start_point: ");
-  Serial.println(calibration2.m_start_point);
+//  Serial.print("calibration2.m_start_point: ");
+//  Serial.println(calibration2.m_start_point);
   EEPROM.put(address, calibration2.m_start_point);
   address += sizeof(double);
 
-  Serial.print("calibration1.m_end_point: ");
-  Serial.println(calibration1.m_end_point);
+//  Serial.print("calibration1.m_end_point: ");
+//  Serial.println(calibration1.m_end_point);
   EEPROM.put(address, calibration1.m_end_point);
   address += sizeof(double);
 
-  Serial.print("calibration2.m_end_point: ");
-  Serial.println(calibration2.m_end_point);
+//  Serial.print("calibration2.m_end_point: ");
+//  Serial.println(calibration2.m_end_point);
   EEPROM.put(address, calibration2.m_end_point);
   address += sizeof(double);
 
-  Serial.print("EEPROM CRC: ");
+//  Serial.print("EEPROM CRC: ");
   unsigned long CRC = EEPROM_CRC();
-  Serial.println(CRC, HEX);
+//  Serial.println(CRC, HEX);
   EEPROM.put(address, CRC);
 }
 
@@ -93,60 +93,72 @@ bool EEPROMload()
   long stepper1_position;
   EEPROM.get(address, stepper1_position);
   address += sizeof(long);
-  Serial.print("stepper1.currentPosition: ");
-  Serial.println(stepper1_position);
+//  Serial.print("stepper1.currentPosition: ");
+//  Serial.println(stepper1_position);
 
   long stepper2_position;
   EEPROM.get(address, stepper2_position);
   address += sizeof(long);
-  Serial.print("stepper2.currentPosition: ");
-  Serial.println(stepper2_position);
+//  Serial.print("stepper2.currentPosition: ");
+//  Serial.println(stepper2_position);
 
   long cal1_m_start_step;
   EEPROM.get(address, cal1_m_start_step);
   address += sizeof(long);
-  Serial.print("calibration1.m_start_step: ");
-  Serial.println(cal1_m_start_step);
+//  Serial.print("calibration1.m_start_step: ");
+//  Serial.println(cal1_m_start_step);
 
   long cal2_m_start_step;
   EEPROM.get(address, cal2_m_start_step);
   address += sizeof(long);
-  Serial.print("calibration2.m_start_step: ");
-  Serial.println(cal2_m_start_step);
+//  Serial.print("calibration2.m_start_step: ");
+//  Serial.println(cal2_m_start_step);
 
   double cal1_m_start_point;
   EEPROM.get(address, cal1_m_start_point);
   address += sizeof(double);
-  Serial.print("calibration1.m_start_point: ");
-  Serial.println(cal1_m_start_point);
+//  Serial.print("calibration1.m_start_point: ");
+//  Serial.println(cal1_m_start_point);
 
   double cal2_m_start_point;
   EEPROM.get(address, cal2_m_start_point);
   address += sizeof(double);
-  Serial.print("calibration2.m_start_point: ");
-  Serial.println(cal2_m_start_point);
+//  Serial.print("calibration2.m_start_point: ");
+//  Serial.println(cal2_m_start_point);
 
   double cal1_m_end_point;
   EEPROM.get(address, cal1_m_end_point);
   address += sizeof(double);
-  Serial.print("calibration1.m_end_point: ");
-  Serial.println(cal1_m_end_point);
+//  Serial.print("calibration1.m_end_point: ");
+//  Serial.println(cal1_m_end_point);
 
   double cal2_m_end_point;
   EEPROM.get(address, cal2_m_end_point);
   address += sizeof(double);
-  Serial.print("calibration2.m_end_point: ");
-  Serial.println(cal2_m_end_point);
+//  Serial.print("calibration2.m_end_point: ");
+//  Serial.println(cal2_m_end_point);
 
-  Serial.print("EEPROM CRC: ");
+//  Serial.print("EEPROM CRC: ");
   unsigned long CRC;
   EEPROM.get(address, CRC);
-  Serial.println(CRC, HEX);
+//  Serial.println(CRC, HEX);
 
-  Serial.print("EEPROM CRC calculated: ");
+//  Serial.print("EEPROM CRC calculated: ");
   unsigned long CRC_calc = EEPROM_CRC();
-  Serial.println(CRC_calc, HEX);
+//  Serial.println(CRC_calc, HEX);
 
   if(CRC != CRC_calc) return true; // error
-  else return false; // success
+
+  stepper1.setCurrentPosition(stepper1_position);
+  stepper2.setCurrentPosition(stepper2_position);
+
+  calibration1.m_start_step = cal1_m_start_step;
+  calibration1.m_start_point = cal1_m_start_point;
+  calibration1.m_end_point = cal1_m_end_point;
+
+  calibration2.m_start_step = cal2_m_start_step;
+  calibration2.m_start_point = cal2_m_start_point;
+  calibration2.m_end_point = cal2_m_end_point;
+  
+  return false; // success
 }
