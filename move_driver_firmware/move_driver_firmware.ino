@@ -136,7 +136,7 @@ void loop()
 
 
   // move motor to some position
-  stepper1.move(800);
+  stepper1.move(2000);
   stepper1.enableOutputs();
   
   while (true)
@@ -150,7 +150,7 @@ void loop()
 
 
   // move motor to some position
-  stepper2.move(800);
+  stepper2.move(1000);
   stepper2.enableOutputs();
   
   while (true)
