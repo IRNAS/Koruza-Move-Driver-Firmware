@@ -52,6 +52,7 @@ void setup()
   stepper2.enableOutputs();
 }
 
+/* koruza move driver firmware main loop */
 void loop()
 {
   sensor1.update();
