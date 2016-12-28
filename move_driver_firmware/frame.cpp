@@ -13,25 +13,25 @@ int frame_parser(uint8_t *buffer, uint8_t length, message_t *msg){
   uint8_t message[100];
   int msg_count = 0;
 	parser_state_t state = SERIAL_STATE_WAIT_START;
-  Serial.println("parse begin");
+  //Serial.println("parse begin");
 
-  for (int i = 0; i < length; i++) {
-    Serial.print(buffer[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-
-  Serial.print("message_len: ");
-  Serial.println(length);
+//  for (int i = 0; i < length; i++) {
+//    Serial.print(buffer[i], HEX);
+//    Serial.print(" ");
+//  }
+//  Serial.println();
+//
+//  Serial.print("message_len: ");
+//  Serial.println(length);
   
 
 	for (int i = 0; i < length; i++){
-    Serial.println();
-    Serial.print("message");
-    Serial.print("[");
-    Serial.print(msg_count);
-    Serial.print("]");
-    Serial.println(message[msg_count], HEX);
+//    Serial.println();
+//    Serial.print("message");
+//    Serial.print("[");
+//    Serial.print(msg_count);
+//    Serial.print("]");
+//    Serial.println(message[msg_count], HEX);
     //Serial.print("state: ");
     //Serial.println(state);
 //    //Serial.print("buffer: ");
@@ -61,7 +61,7 @@ int frame_parser(uint8_t *buffer, uint8_t length, message_t *msg){
 					// End of frame.
 					message_result_t result = message_parse(msg, message, msg_count);
           //Serial.print("result: ");
-          Serial.println(result);
+          //Serial.println(result);
           return (int)msg_count;
 					if (result == MESSAGE_SUCCESS) {
             return (int)msg_count;
