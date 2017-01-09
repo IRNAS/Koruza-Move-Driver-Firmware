@@ -18,7 +18,7 @@ extern "C" {
 uint16_t htons(uint16_t v);
 
 /* host-to-network long*/
-//uint32_t htonl(uint32_t v);
+uint32_t htonl(uint32_t v);
 #define htonl(x) ( ((x)<<24 & 0xFF000000UL) | \
                    ((x)<< 8 & 0x00FF0000UL) | \
                    ((x)>> 8 & 0x0000FF00UL) | \

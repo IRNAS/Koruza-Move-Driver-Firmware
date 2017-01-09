@@ -39,7 +39,8 @@ message_result_t message_init(message_t *message)
 
 void message_free(message_t *message)
 {
-  for (size_t i = 0; i < message->length; i++) {
+  for (size_t i = 0; i < message->length; i++)
+  {
     free(message->tlv[i].value);
   }
 
@@ -51,8 +52,10 @@ message_result_t message_parse(message_t *message, const uint8_t *data, size_t l
   message_init(message);
 
   size_t offset = 0;
-  while (offset < length) {
-    if (message->length >= MAX_TLV_COUNT) {
+  while (offset < length)
+  {
+    if (message->length >= MAX_TLV_COUNT)
+    {
       message_free(message);
       return MESSAGE_ERROR_TOO_MANY_TLVS;
     }
@@ -63,7 +66,8 @@ message_result_t message_parse(message_t *message, const uint8_t *data, size_t l
     message->tlv[i].type = data[offset];
     offset += sizeof(uint8_t);
 
-    if (offset + sizeof(uint16_t) > length) {
+    if (offset + sizeof(uint16_t) > length) 
+    {
       message_free(message);
       return MESSAGE_ERROR_PARSE_ERROR;
     }
@@ -73,14 +77,16 @@ message_result_t message_parse(message_t *message, const uint8_t *data, size_t l
     message->tlv[i].length = ntohs(message->tlv[i].length);
     offset += sizeof(uint16_t);
 
-    if (offset + message->tlv[i].length > length) {
+    if (offset + message->tlv[i].length > length) 
+    {
       message_free(message);
       return MESSAGE_ERROR_PARSE_ERROR;
     }
 
     // Parse value.
     message->tlv[i].value = (uint8_t*) malloc(message->tlv[i].length);
-    if (!message->tlv[i].value) {
+    if (!message->tlv[i].value) 
+    {
       message_free(message);
       return MESSAGE_ERROR_OUT_OF_MEMORY;
     }
@@ -89,9 +95,11 @@ message_result_t message_parse(message_t *message, const uint8_t *data, size_t l
     offset += message->tlv[i].length;
 
     // If this is a checksum TLV, do checksum verification immediately.
-    if (message->tlv[i].type == TLV_CHECKSUM) {
+    if (message->tlv[i].type == TLV_CHECKSUM) 
+    {
       uint32_t checksum = message_checksum(message);
-      if (memcmp(&checksum, message->tlv[i].value, sizeof(uint32_t) != 0)) {
+      if (memcmp(&checksum, message->tlv[i].value, sizeof(uint32_t) != 0))
+      {
         message_free(message);
         return MESSAGE_ERROR_CHECKSUM_MISMATCH;
       }
@@ -107,13 +115,15 @@ message_result_t message_tlv_add(message_t *message, uint8_t type, uint16_t leng
 {
   //Serial.print("message.length enter add function ");
   //Serial.println(message->length);
-  if (message->length >= MAX_TLV_COUNT) {
+  if (message->length >= MAX_TLV_COUNT)
+  {
     return MESSAGE_ERROR_TOO_MANY_TLVS;
   }
 
   size_t i = message->length;
   message->tlv[i].value = (uint8_t*) malloc(length);
-  if (!message->tlv[i].value) {
+  if (!message->tlv[i].value)
+  {
     return MESSAGE_ERROR_OUT_OF_MEMORY;
   }
 
@@ -165,8 +175,10 @@ message_result_t message_tlv_add_checksum(message_t *message)
 
 message_result_t message_tlv_get(const message_t *message, uint8_t type, uint8_t *destination, size_t length)
 {
-  for (size_t i = 0; i < message->length; i++) {
-    if (message->tlv[i].type == type) {
+  for (size_t i = 0; i < message->length; i++)
+  {
+    if (message->tlv[i].type == type)
+    {
       //assert(message->tlv[i].length <= length);
       memcpy(destination, message->tlv[i].value, message->tlv[i].length);
       return MESSAGE_SUCCESS;
@@ -180,7 +192,8 @@ message_result_t message_tlv_get_command(const message_t *message, tlv_command_t
 {
   uint8_t _command;
   message_result_t result = message_tlv_get(message, TLV_COMMAND, &_command, sizeof(uint8_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS)
+  {
     return result;
   }
 
@@ -193,7 +206,8 @@ message_result_t message_tlv_get_reply(const message_t *message, tlv_reply_t *re
 {
   uint8_t _reply;
   message_result_t result = message_tlv_get(message, TLV_REPLY, &_reply, sizeof(uint8_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS)
+  {
     return result;
   }
 
@@ -205,7 +219,8 @@ message_result_t message_tlv_get_reply(const message_t *message, tlv_reply_t *re
 message_result_t message_tlv_get_motor_position(const message_t *message, tlv_motor_position_t *position)
 {
   message_result_t result = message_tlv_get(message, TLV_MOTOR_POSITION, (uint8_t*) position, sizeof(tlv_motor_position_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS)
+  {
     return result;
   }
 
@@ -219,7 +234,8 @@ message_result_t message_tlv_get_motor_position(const message_t *message, tlv_mo
 message_result_t message_tlv_get_current_reading(const message_t *message, uint16_t *current)
 {
   message_result_t result = message_tlv_get(message, TLV_CURRENT_READING, (uint8_t*) current, sizeof(uint16_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS) 
+  {
     return result;
   }
 
@@ -231,7 +247,8 @@ message_result_t message_tlv_get_current_reading(const message_t *message, uint1
 size_t message_serialized_size(const message_t *message)
 {
   size_t size = 0;
-  for (size_t i = 0; i < message->length; i++) {
+  for (size_t i = 0; i < message->length; i++)
+  {
     size += sizeof(uint8_t) + sizeof(uint16_t) + message->tlv[i].length;
   }
 
@@ -242,9 +259,11 @@ ssize_t message_serialize(uint8_t *buffer, size_t length, const message_t *messa
 {
   size_t offset = 0;
   size_t remaining_buffer = length;
-  for (size_t i = 0; i < message->length; i++) {
+  for (size_t i = 0; i < message->length; i++)
+  {
     size_t tlv_length = sizeof(uint8_t) + sizeof(uint16_t) + message->tlv[i].length;
-    if (remaining_buffer < tlv_length) {
+    if (remaining_buffer < tlv_length) 
+    {
       return MESSAGE_ERROR_BUFFER_TOO_SMALL;
     }
 
@@ -267,14 +286,16 @@ void message_print(const message_t *message)
   Serial.print("<Message tlvs(");
   Serial.print((unsigned int) message->length);
   Serial.print(")=[");
-  for (size_t i = 0; i < message->length; i++) {
+  for (size_t i = 0; i < message->length; i++) 
+  {
     uint8_t *data = message->tlv[i].value;
     size_t data_length = message->tlv[i].length;
 
     Serial.print("{");
     Serial.print(message->tlv[i].type);
     Serial.print(", \"");
-    for (size_t j = 0; j < data_length; j++) {
+    for (size_t j = 0; j < data_length; j++) 
+    {
       //Serial.print("%02X%s", data[j], (j < data_length - 1) ? " " : "");
       Serial.print(data[j], HEX);
     }
@@ -291,7 +312,8 @@ uint32_t message_checksum(const message_t *message)
   uint32_t checksum = 0;
   // Create a CRC32 checksum calculator.
   CRC32 crc;
-  for (size_t i = 0; i < message->length; i++) {
+  for (size_t i = 0; i < message->length; i++) 
+  {
     crc.update(message->tlv[i].value, message->tlv[i].length);
     //checksum = crc32(checksum, message->tlv[i].value, message->tlv[i].length);
     //Serial.print("Voja");
@@ -312,7 +334,8 @@ message_result_t message_tlv_add_error_report(message_t *message, const tlv_erro
 message_result_t message_tlv_get_error_report(const message_t *message, tlv_error_report_t *report)
 {
   message_result_t result = message_tlv_get(message, TLV_ERROR_REPORT, (uint8_t*) report, sizeof(tlv_error_report_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS)
+  {
     return result;
   }
 
@@ -330,12 +353,43 @@ message_result_t message_tlv_add_power_reading(message_t *message, uint16_t powe
 message_result_t message_tlv_get_power_reading(const message_t *message, uint16_t *power)
 {
   message_result_t result = message_tlv_get(message, TLV_POWER_READING, (uint8_t*) power, sizeof(uint16_t));
-  if (result != MESSAGE_SUCCESS) {
+  if (result != MESSAGE_SUCCESS)
+  {
     return result;
   }
 
   *power = ntohs(*power);
 
   return MESSAGE_SUCCESS;
+}
+
+message_result_t message_tlv_add_debug_string(message_t *message, String debug_string)
+{
+  // Length (with one extra character for the null terminator).
+  int str_len = debug_string.length() + 1; 
+  
+  // Prepare the character array (the buffer).
+  char char_array[str_len];
+  
+  // Copy it over.
+  debug_string.toCharArray(char_array, str_len);
+
+  // Add debug TLV to a protocol message.
+  return message_tlv_add(message, TLV_DEBUG, str_len, (uint8_t*) char_array);
+}
+
+message_result_t message_tlv_get_debug_string(const message_t *message, String *debug_string)
+{
+  for (size_t i = 0; i < message->length; i++)
+  {
+    if (message->tlv[i].type == TLV_DEBUG)
+    {
+      *debug_string = String((char*) message->tlv[i].value);
+      return MESSAGE_SUCCESS;
+    }
+  }
+
+  debug_string = nullptr;
+  return MESSAGE_ERROR_TLV_NOT_FOUND;
 }
 
