@@ -21,6 +21,9 @@ int message_len = 0;
 /* Parsed message */
 message_t msg_parsed;
 
+// decode command callback function (implemented in move_driver_fimware.ino)
+extern void decodeCommand(const message_t& msg);
+
 
 void receiveBytes(uint8_t rx_data)
 {
@@ -82,7 +85,8 @@ void receiveBytes(uint8_t rx_data)
       //		  message_print(&msg_parsed);
       //		  Serial.println();
 
-      decodeCommand(msg_parsed);
+      // callback function
+      decodeCommand(msg_parsed); // implemented in move_driver_fimware.ino
 
       /* Free received message */
       message_free(&msg_parsed);
@@ -118,55 +122,4 @@ bool sendBytes(const message_t& msg_send)
   //	Serial.println();
 
   return true;
-}
-
-
-void decodeCommand(const message_t& msg)
-{
-  tlv_command_t parsed_command;
-  if (message_tlv_get_command(&msg, &parsed_command) == MESSAGE_SUCCESS)
-  {
-    switch (parsed_command)
-    {
-      case (COMMAND_GET_STATUS):
-        {
-          Serial.println("get status!");
-          break;
-        }
-      case (COMMAND_MOVE_MOTOR):
-        {
-          Serial.println("move motor!");
-          tlv_motor_position_t position;
-          if (message_tlv_get_motor_position(&msg, &position) == MESSAGE_SUCCESS)
-          {
-            Serial.print("received position: ");
-            Serial.print("x :"); Serial.print(position.x);
-            Serial.print("y :"); Serial.print(position.y);
-            Serial.print("z :"); Serial.print(position.z);
-            Serial.println();
-          }
-          break;
-        }
-      case (COMMAND_REBOOT):
-        {
-          Serial.println("reboot!");
-          break;
-        }
-      case (COMMAND_FIRMWARE_UPGRADE):
-        {
-          Serial.println("firmware upgrade!");
-          break;
-        }
-      case (COMMAND_HOMING):
-        {
-          Serial.println("homing!");
-          break;
-        }
-      case (COMMAND_RESTORE_MOTOR):
-        {
-          Serial.println("restore motor!");
-          break;
-        }
-    }
-  }
 }

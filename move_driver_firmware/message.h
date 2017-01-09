@@ -70,7 +70,6 @@ typedef enum {
 typedef struct {
   int32_t x;
   int32_t y;
-  int32_t z;
 } tlv_motor_position_t;
 
 

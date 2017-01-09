@@ -5,6 +5,7 @@
 #include "homing.h"
 #include "calibration.h"
 #include "EEPROM_manager.h"
+#include "message.h"
 
 const int limit_switch1_pin = 4;
 const int limit_switch2_pin = 3;
@@ -208,4 +209,55 @@ void loop()
   
 
   while(true);
+}
+
+
+// decode command callback function
+void decodeCommand(const message_t& msg)
+{
+  tlv_command_t parsed_command;
+  if (message_tlv_get_command(&msg, &parsed_command) == MESSAGE_SUCCESS)
+  {
+    switch (parsed_command)
+    {
+      case (COMMAND_GET_STATUS):
+        {
+          Serial.println("get status!");
+          break;
+        }
+      case (COMMAND_MOVE_MOTOR):
+        {
+          Serial.println("move motor!");
+          tlv_motor_position_t position;
+          if (message_tlv_get_motor_position(&msg, &position) == MESSAGE_SUCCESS)
+          {
+            Serial.print("received position: ");
+            Serial.print("x :"); Serial.print(position.x);
+            Serial.print("y :"); Serial.print(position.y);
+            Serial.println();
+          }
+          break;
+        }
+      case (COMMAND_REBOOT):
+        {
+          Serial.println("reboot!");
+          break;
+        }
+      case (COMMAND_FIRMWARE_UPGRADE):
+        {
+          Serial.println("firmware upgrade!");
+          break;
+        }
+      case (COMMAND_HOMING):
+        {
+          Serial.println("homing!");
+          break;
+        }
+      case (COMMAND_RESTORE_MOTOR):
+        {
+          Serial.println("restore motor!");
+          break;
+        }
+    }
+  }
 }

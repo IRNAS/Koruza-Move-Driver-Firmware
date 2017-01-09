@@ -152,7 +152,6 @@ message_result_t message_tlv_add_motor_position(message_t *message, const tlv_mo
   tlv_motor_position_t tmp;
   tmp.x = htonl(position->x);
   tmp.y = htonl(position->y);
-  tmp.z = htonl(position->z);
   return message_tlv_add(message, TLV_MOTOR_POSITION, sizeof(tlv_motor_position_t), (uint8_t*) &tmp);
 }
 
@@ -218,7 +217,6 @@ message_result_t message_tlv_get_motor_position(const message_t *message, tlv_mo
 
   position->x = ntohl(position->x);
   position->y = ntohl(position->y);
-  position->z = ntohl(position->z);
 
   return MESSAGE_SUCCESS;
 }
