@@ -111,8 +111,9 @@ void sendBytes(message_t& msg_send)
   //	Serial.println();
   for (size_t i = 0; i < send_frame_size; i++)
   {
-    Serial.print(send_frame[i], HEX);
-    Serial.print(" ");
+    Serial.write(send_frame[i]);
+    //Serial.print(send_frame[i], HEX);
+    //Serial.print(" ");
   }
   //	Serial.println();
 }
