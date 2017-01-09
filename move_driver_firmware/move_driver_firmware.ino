@@ -1,3 +1,5 @@
+
+#include "communication.h"
 #include "switch.h" // https://github.com/IRNAS/Arduino-Switch-Debounce
 #include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
@@ -77,6 +79,7 @@ void setup()
   // begin serial communication
   Serial.begin(115200);
 
+
   // initialize MCU pins
   pinMode(unused_gpio_pin, INPUT);
   pinMode(sensor1_pwr_pin, OUTPUT);
@@ -137,6 +140,11 @@ void setup()
 /* koruza move driver firmware main loop */
 void loop()
 {
+  //communication branch
+  while (Serial.available())
+  {
+    receiveBytes((uint8_t)Serial.read());
+////////
   /* Parsed message */
   message_t msg_parsed;
   
@@ -357,6 +365,7 @@ void serialEvent() {
     /* Store last received byte for ESC check */
     rx_last[0] = rx_data[0];
     
+
   }
 }
 
