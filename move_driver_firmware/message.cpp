@@ -16,17 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "message.hpp"
+ 
+#include "message.h"
 #include <Arduino.h> 
-//#include "crc32.hpp"
-/*Lib for CRC32 https://github.com/bakercp/CRC32 */
-#include "CRC32.h"
+#include "CRC32.h" // lib for CRC32 https://github.com/bakercp/CRC32
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "Ethernet.h"
-#include "inet.hpp"
-//#include <arpa/inet.h>
+#include "inet.h"
 
 // Forward declarations.
 uint32_t message_checksum(const message_t *message);
@@ -158,12 +156,6 @@ message_result_t message_tlv_add_motor_position(message_t *message, const tlv_mo
   return message_tlv_add(message, TLV_MOTOR_POSITION, sizeof(tlv_motor_position_t), (uint8_t*) &tmp);
 }
 
-message_result_t message_tlv_add_current_reading(message_t *message, uint16_t current)
-{
-  current = htons(current);
-  return message_tlv_add(message, TLV_CURRENT_READING, sizeof(uint16_t), (uint8_t*) &current);
-}
-
 message_result_t message_tlv_add_checksum(message_t *message)
 {
   uint32_t checksum = message_checksum(message);
@@ -227,19 +219,6 @@ message_result_t message_tlv_get_motor_position(const message_t *message, tlv_mo
   position->x = ntohl(position->x);
   position->y = ntohl(position->y);
   position->z = ntohl(position->z);
-
-  return MESSAGE_SUCCESS;
-}
-
-message_result_t message_tlv_get_current_reading(const message_t *message, uint16_t *current)
-{
-  message_result_t result = message_tlv_get(message, TLV_CURRENT_READING, (uint8_t*) current, sizeof(uint16_t));
-  if (result != MESSAGE_SUCCESS) 
-  {
-    return result;
-  }
-
-  *current = ntohs(*current);
 
   return MESSAGE_SUCCESS;
 }
@@ -340,25 +319,6 @@ message_result_t message_tlv_get_error_report(const message_t *message, tlv_erro
   }
 
   report->code = ntohl(report->code);
-
-  return MESSAGE_SUCCESS;
-}
-
-message_result_t message_tlv_add_power_reading(message_t *message, uint16_t power)
-{
-	power = htons(power);
-	return message_tlv_add(message, TLV_POWER_READING, sizeof(uint16_t), (uint8_t*) &power);
-}
-
-message_result_t message_tlv_get_power_reading(const message_t *message, uint16_t *power)
-{
-  message_result_t result = message_tlv_get(message, TLV_POWER_READING, (uint8_t*) power, sizeof(uint16_t));
-  if (result != MESSAGE_SUCCESS)
-  {
-    return result;
-  }
-
-  *power = ntohs(*power);
 
   return MESSAGE_SUCCESS;
 }

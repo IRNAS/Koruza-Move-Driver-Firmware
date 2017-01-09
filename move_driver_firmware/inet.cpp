@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include "inet.hpp"
+#include "inet.h"
 
 
 #ifdef LITTLE_ENDIAN

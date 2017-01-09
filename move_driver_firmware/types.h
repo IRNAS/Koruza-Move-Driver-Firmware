@@ -134,10 +134,10 @@ typedef volatile unsigned long vuint32;
 
 /* bsd */
 typedef uint8			u_char;		/**< 8-bit value */
-typedef uint8 			SOCKET;
-typedef uint16			u_short;	/**< 16-bit value */
-typedef uint16			u_int;		/**< 16-bit value */
-typedef uint32			u_long;		/**< 32-bit value */
+typedef uint8 	  SOCKET;
+typedef uint16		u_short;	/**< 16-bit value */
+typedef uint16		u_int;		/**< 16-bit value */
+typedef uint32		u_long;		/**< 32-bit value */
 
 typedef union _un_l2cval 
 {
@@ -154,7 +154,7 @@ typedef union _un_i2cval
 
 /** global define */
 #define FW_VERSION		0x01010000	/* System F/W Version : 1.1.0.0	*/
-#define HW_VERSION	       0x01000000
+#define HW_VERSION	  0x01000000
 
 
 #define TX_RX_MAX_BUF_SIZE	2048

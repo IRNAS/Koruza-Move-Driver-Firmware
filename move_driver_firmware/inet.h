@@ -8,10 +8,6 @@
 #ifndef INET_H_
 #define INET_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define LITTLE_ENDIAN
 
 /* host-to-network short*/
@@ -29,10 +25,5 @@ uint16_t ntohs(uint16_t v);
 
 /* network-to-host long*/
 uint32_t ntohl(uint32_t v);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* INET_H_ */

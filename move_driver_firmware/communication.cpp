@@ -1,8 +1,10 @@
 #include "Arduino.h"
+#include "communication.h"
+
 //TLV communication modules
-#include "message.hpp"
-#include "frame.hpp"
-#include "inet.hpp"
+#include "message.h"
+#include "frame.h"
+#include "inet.h"
 
 
 /*** RECEIVING DATA VARIABLES ***/
@@ -64,25 +66,26 @@ void receiveBytes(uint8_t rx_data)
       /* Transfer complete, data is ready to read */
       /* Received serial message */
       //		  Serial.println("Received serialized protocol message:");
-      //	  for (size_t i = 0; i < message_len; i++)
-      //	  {
-      //			Serial.print(rx_buffer[i], HEX);
-      //			Serial.print(" ");
-      //	  }
+      //	    for (size_t i = 0; i < message_len; i++)
+      //	    {
+      //			  Serial.print(rx_buffer[i], HEX);
+      //			  Serial.print(" ");
+      //	    }
       //		  Serial.println();
-
       //		  Serial.print("Received message_len: ");
       //		  Serial.println(message_len);
 
 
       /* Parse received message */
-      int num = frame_parser((uint8_t *)&rx_buffer, message_len, &msg_parsed);
+      frame_parser((uint8_t *)&rx_buffer, message_len, &msg_parsed);
       //		  Serial.println("Parsed protocol message: ");
       //		  message_print(&msg_parsed);
       //		  Serial.println();
+
+      decodeCommand(msg_parsed);
+
       /* Free received message */
       message_free(&msg_parsed);
-
     }
   }
   else
@@ -97,7 +100,7 @@ void receiveBytes(uint8_t rx_data)
 }
 
 
-void sendBytes(message_t& msg_send)
+bool sendBytes(const message_t& msg_send)
 {
   /*** TRANSMITTING DATA VARIABLES ***/
   /* Sending frame buffer */
@@ -107,8 +110,63 @@ void sendBytes(message_t& msg_send)
 
   send_frame_size = frame_message(send_frame, sizeof(send_frame), &msg_send);
 
+  if (send_frame_size <= 0) return false;
+
   //	Serial.print("Serialized protocol message with frame:");
   //	Serial.println();
   Serial.write(send_frame, send_frame_size);
   //	Serial.println();
+
+  return true;
+}
+
+
+void decodeCommand(const message_t& msg)
+{
+  tlv_command_t parsed_command;
+  if (message_tlv_get_command(&msg, &parsed_command) == MESSAGE_SUCCESS)
+  {
+    switch (parsed_command)
+    {
+      case (COMMAND_GET_STATUS):
+        {
+          Serial.println("get status!");
+          break;
+        }
+      case (COMMAND_MOVE_MOTOR):
+        {
+          Serial.println("move motor!");
+          tlv_motor_position_t position;
+          if (message_tlv_get_motor_position(&msg, &position) == MESSAGE_SUCCESS)
+          {
+            Serial.print("received position: ");
+            Serial.print("x :"); Serial.print(position.x);
+            Serial.print("y :"); Serial.print(position.y);
+            Serial.print("z :"); Serial.print(position.z);
+            Serial.println();
+          }
+          break;
+        }
+      case (COMMAND_REBOOT):
+        {
+          Serial.println("reboot!");
+          break;
+        }
+      case (COMMAND_FIRMWARE_UPGRADE):
+        {
+          Serial.println("firmware upgrade!");
+          break;
+        }
+      case (COMMAND_HOMING):
+        {
+          Serial.println("homing!");
+          break;
+        }
+      case (COMMAND_RESTORE_MOTOR):
+        {
+          Serial.println("restore motor!");
+          break;
+        }
+    }
+  }
 }
