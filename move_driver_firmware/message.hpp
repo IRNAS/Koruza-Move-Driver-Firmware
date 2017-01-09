@@ -18,14 +18,11 @@
 */
 #ifndef KORUZA_MESSAGE_H
 #define KORUZA_MESSAGE_H
+
 #include <Arduino.h>
 #include <stdint.h>
 #include "types.hpp"
 //#include <sys/types.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Maximum number of TLVs inside a message.
 #define MAX_TLV_COUNT 25
@@ -306,7 +303,7 @@ message_result_t message_tlv_get_power_reading(const message_t *message, uint16_
    @param power Power reading
    @return Operation result code
 */
-message_result_t message_tlv_add_debug_string(const message_t *message, String debug_string);
+message_result_t message_tlv_add_debug_string(message_t *message, String debug_string);
 
 
 /**
@@ -317,10 +314,5 @@ message_result_t message_tlv_add_debug_string(const message_t *message, String d
    @return Operation result code
 */
 message_result_t message_tlv_get_debug_string(const message_t *message, String *debug_string);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
