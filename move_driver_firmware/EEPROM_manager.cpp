@@ -5,6 +5,15 @@
 #include "calibration.h"
 
 
+EEPROM_manager::EEPROM_manager(AccelStepper& stepper1, AccelStepper& stepper2, Calibration& calibration1, Calibration& calibration2) :
+	AccelStepper& m_stepper1(stepper1),
+	AccelStepper& m_stepper2(stepper2),
+	Calibration& m_calibration1(calibration1),
+	Calibration& m_calibration2(calibration2)
+{
+}
+
+
 unsigned long EEPROM_manager::EEPROM_CRC()
 {
   const unsigned long crc_table[16] =
