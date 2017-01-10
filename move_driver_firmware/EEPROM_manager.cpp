@@ -5,14 +5,7 @@
 #include "calibration.h"
 
 
-extern AccelStepper stepper1;
-extern AccelStepper stepper2;
-
-extern Calibration calibration1;
-extern Calibration calibration2;
-
-
-unsigned long EEPROM_CRC()
+unsigned long EEPROM_manager::EEPROM_CRC()
 {
   const unsigned long crc_table[16] =
   {
@@ -35,32 +28,32 @@ unsigned long EEPROM_CRC()
 }
 
 
-void EEPROMsave()
+void EEPROM_manager::EEPROMsave()
 {
   unsigned long address = 0;
   
-  EEPROM.put(address, stepper1.currentPosition());
+  EEPROM.put(address, m_stepper1.currentPosition());
   address += sizeof(long);
   
-  EEPROM.put(address, stepper2.currentPosition());
+  EEPROM.put(address, m_stepper2.currentPosition());
   address += sizeof(long);
 
-  EEPROM.put(address, calibration1.m_start_step);
+  EEPROM.put(address, m_calibration1.m_start_step);
   address += sizeof(long);
 
-  EEPROM.put(address, calibration2.m_start_step);
+  EEPROM.put(address, m_calibration2.m_start_step);
   address += sizeof(long);
 
-  EEPROM.put(address, calibration1.m_start_point);
+  EEPROM.put(address, m_calibration1.m_start_point);
   address += sizeof(double);
 
-  EEPROM.put(address, calibration2.m_start_point);
+  EEPROM.put(address, m_calibration2.m_start_point);
   address += sizeof(double);
 
-  EEPROM.put(address, calibration1.m_end_point);
+  EEPROM.put(address, m_calibration1.m_end_point);
   address += sizeof(double);
 
-  EEPROM.put(address, calibration2.m_end_point);
+  EEPROM.put(address, m_calibration2.m_end_point);
   address += sizeof(double);
 
   unsigned long CRC = EEPROM_CRC();
@@ -68,7 +61,7 @@ void EEPROMsave()
 }
 
 
-bool EEPROMload()
+bool EEPROM_manager::EEPROMload()
 {
   unsigned long address = 0;
 
@@ -111,16 +104,16 @@ bool EEPROMload()
 
   if(CRC != CRC_calc) return true; // error
 
-  stepper1.setCurrentPosition(stepper1_position);
-  stepper2.setCurrentPosition(stepper2_position);
+  m_stepper1.setCurrentPosition(stepper1_position);
+  m_stepper2.setCurrentPosition(stepper2_position);
 
-  calibration1.m_start_step = cal1_m_start_step;
-  calibration1.m_start_point = cal1_m_start_point;
-  calibration1.m_end_point = cal1_m_end_point;
+  m_calibration1.m_start_step = cal1_m_start_step;
+  m_calibration1.m_start_point = cal1_m_start_point;
+  m_calibration1.m_end_point = cal1_m_end_point;
 
-  calibration2.m_start_step = cal2_m_start_step;
-  calibration2.m_start_point = cal2_m_start_point;
-  calibration2.m_end_point = cal2_m_end_point;
+  m_calibration2.m_start_step = cal2_m_start_step;
+  m_calibration2.m_start_point = cal2_m_start_point;
+  m_calibration2.m_end_point = cal2_m_end_point;
   
   return false; // success
 }
