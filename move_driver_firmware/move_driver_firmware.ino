@@ -103,60 +103,16 @@ void setup()
 void loop()
 {
   // calibrate sensor 1
-  Serial.println("Starting sensor 1 calibration.");
+  //Serial.println("Starting sensor 1 calibration.");
   uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
-  if (calibration_status != 0x00) error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
-  else Serial.println("Sensor 1 calibrated.");
+  //if (calibration_status != 0x00) error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
+  //else Serial.println("Sensor 1 calibrated.");
 
   // calibrate sensor 2
-  Serial.println("Starting sensor 2 calibration.");
+  //Serial.println("Starting sensor 2 calibration.");
   calibration_status = calibration2.calibrate(9); // 9 points used
-  if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
-  else Serial.println("Sensor 2 calibrated.");
-
-
-  // try to update sensor value
-  int count_tries = 1000;
-  uint8_t status_sensor = 0x00;
-
-  while (count_tries > 0)
-  {
-    status_sensor = sensor1.update();
-    if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
-    count_tries --;
-  }
-  if (status_sensor != 0x00) error_handler("Sensor 1 failed to update: 0x" + String(status_sensor, HEX)); // error
-
-  //Serial.print("Sensor 1 value: ");
-  //Serial.println(sensor1.m_dPhi_xz);
-
-  long motor_step = 0;
-  calibration1.calculate_step(sensor1.m_dPhi_xz, motor_step);
-  Serial.print("Motor 1 step: ");
-  Serial.println(motor_step);
-
-
-
-  // try to update sensor value
-  count_tries = 1000;
-  status_sensor = 0x00;
-
-  while (count_tries > 0)
-  {
-    status_sensor = sensor2.update();
-    if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
-    count_tries --;
-  }
-  if (status_sensor != 0x00) error_handler("Sensor 2 failed to update: 0x" + String(status_sensor, HEX)); // error
-
-  //Serial.print("Sensor 2 value: ");
-  //Serial.println(sensor2.m_dPhi_xz);
-
-  motor_step = 0;
-  calibration2.calculate_step(sensor2.m_dPhi_xz, motor_step);
-  Serial.print("Motor 2 step: ");
-  Serial.println(motor_step);
-
+  //if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
+  //else Serial.println("Sensor 2 calibrated.");
 
   while (true);
 }
@@ -172,10 +128,17 @@ void moveMotors(int32_t posMotor1, int32_t posMotor2)
 
   while (true)
   {
-    if (limit_switch1.get_button_state() == true) error_handler("Limit switch 1 pressed.");
-    stepper1.run();
+    if (limit_switch1.get_button_state() == true)
+    {
+      break;
+    }
+
+    if (limit_switch2.get_button_state() == true)
+    {
+      break;
+    }
     
-    if (limit_switch2.get_button_state() == true) error_handler("Limit switch 2 pressed.");
+    stepper1.run();
     stepper2.run();
     
     if ((!stepper1.isRunning()) && (!stepper2.isRunning())) break;
@@ -197,6 +160,14 @@ void decodeCommand(const message_t& msg)
       case (COMMAND_GET_STATUS):
         {
           Serial.println("get status!");
+          break;
+        }
+      case (COMMAND_GET_SENSOR_VALUE):
+        {
+          long motor1_step;
+          uint8_t status_sensor1 = calibration1.calculate_step(motor1_step);
+          long motor2_step;
+          uint8_t status_sensor2 = calibration2.calculate_step(motor2_step);
           break;
         }
       case (COMMAND_MOVE_MOTOR):
@@ -227,6 +198,10 @@ void decodeCommand(const message_t& msg)
       case (COMMAND_RESTORE_MOTOR):
         {
           Serial.println("restore motor!");
+          break;
+        }
+      default:
+        {
           break;
         }
     }

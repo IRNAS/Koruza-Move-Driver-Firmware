@@ -165,15 +165,29 @@ uint8_t Calibration::calibrate(const long N_points)
 }
 
 
-uint8_t Calibration::calculate_step(const double sensor_reading, long& motor_step)
+uint8_t Calibration::calculate_step(long& motor_step)
 {
   //return status:
   //  0x00 = OK
-  //  0x01 = invalid wrap function parameters
+  //  0x01 = sensor communciation error
+  //  0x02 = sensor bussy
+  //  0x03 = invalid wrap function parameters
 
-  motor_step = -100 /*+ m_start_step*/ + (long)( (sensor_reading - m_start_point) * (double)m_steps_per_revolution / (m_end_point - m_start_point) );
+  // try to update sensor value
+  int count_tries = 1000;
+  uint8_t status_sensor = 0x00;
 
-  if (wrap(motor_step, 0, m_steps_per_revolution) != 0x00) return 0x01; // error
+  while (count_tries > 0)
+  {
+    status_sensor = m_sensor.update();
+    if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
+    count_tries --;
+  }
+  if (status_sensor != 0x00) return status_sensor; // error
+
+  motor_step = -100 /*+ m_start_step*/ + (long)( (m_sensor.m_dPhi_xz - m_start_point) * (double)m_steps_per_revolution / (m_end_point - m_start_point) );
+
+  if (wrap(motor_step, 0, m_steps_per_revolution) != 0x00) return 0x03; // error
 
   return 0x00; // success
 }

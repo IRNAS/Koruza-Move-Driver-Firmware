@@ -22,7 +22,7 @@ class Calibration
   public:
     Calibration(Switch& limit_switch, TLV493D& sensor, AccelStepper& stepper);
     uint8_t calibrate(const long N_points);
-    uint8_t calculate_step(const double sensor_reading, long& motor_step);
+    uint8_t calculate_step(long& motor_step);
 
   private:
     double phase_unwrap(const double angle_0_2pi, const double prev_value, long& interval);
