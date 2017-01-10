@@ -10,7 +10,7 @@ extern AccelStepper stepper2;
 
 void homing()
 {
-  Serial.println("Homing started.");
+  //Serial.println("Homing started.");
 
   stepper1.setCurrentPosition(0);
   stepper1.setMaxSpeed(1000);
@@ -60,13 +60,13 @@ void homing()
 
     if (stepper1.distanceToGo() == 0)
     {
-      Serial.println("Homing 1 finished.");
+      //Serial.println("Homing 1 finished.");
       stepper1.disableOutputs();
     }
 
     if (stepper2.distanceToGo() == 0)
     {
-      Serial.println("Homing 2 finished.");
+      //Serial.println("Homing 2 finished.");
       stepper2.disableOutputs();
     }
 

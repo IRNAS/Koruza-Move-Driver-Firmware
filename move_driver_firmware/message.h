@@ -52,6 +52,7 @@ typedef enum {
   COMMAND_FIRMWARE_UPGRADE = 5,
   COMMAND_HOMING = 6,
   COMMAND_RESTORE_MOTOR = 7,
+  COMMAND_READ_SENSOR_VALUE = 8,
 } tlv_command_t;
 
 

@@ -41,17 +41,10 @@ Calibration calibration1(limit_switch1, sensor1, stepper1);
 Calibration calibration2(limit_switch2, sensor2, stepper2);
 
 
-void error_handler(String error_message)
-{
-  while (true)
-  {
-    stepper1.disableOutputs();
-    stepper2.disableOutputs();
-    
-    Serial.println("Error occured!");
-    Serial.println(error_message);
-  }
-}
+uint8_t status_sensor1;
+uint8_t status_sensor2;
+bool status_EEPROM;
+
 
 
 void setup()
@@ -75,28 +68,21 @@ void setup()
   // sensor1 power-up
   digitalWrite(sensor1_pwr_pin, HIGH);
   digitalWrite(i2c_sda, LOW); // address = 0x1F
-  //Serial.println("Sensor 1 powered up.");
   delay(500);
 
   // sensor2 power-up
   digitalWrite(sensor2_pwr_pin, HIGH);
   digitalWrite(i2c_sda, HIGH); // address = 0x5E
-  //Serial.println("Sensor 2 powered up.");
   delay(500);
 
   Wire.begin(); // begin I2C communication
 
 
   // initialize sensor 1
-  uint8_t status_sensor = sensor1.init(LOW); // address = 0x1F
-  if (status_sensor != 0x00) error_handler("Sensor 1 failed to intialize: 0x" + String(status_sensor, HEX));
-  //else Serial.println("Sensor 1 initialized.");
-
+  status_sensor1 = sensor1.init(LOW); // address = 0x1F
 
   // initialize sensor 2
-  status_sensor = sensor2.init(HIGH); // address = 0x5E
-  if (status_sensor != 0x00) error_handler("Sensor 2 failed to intialize: 0x" + String(status_sensor, HEX));
-  //else Serial.println("Sensor 2 initialized.");
+  status_sensor2 = sensor2.init(HIGH); // address = 0x5E
 
 
   // initialize stepper motor 1
@@ -111,17 +97,11 @@ void setup()
 
   delay(1000);
 
-  ///TEST !!!
-  EEPROMsave();
-  if(EEPROMload()) error_handler("EEPROM error.");
+  status_EEPROM = EEPROMload();
 }
 
 void loop()
 {
-  // homing sequence on both axes
-  homing();
-
-
   // calibrate sensor 1
   Serial.println("Starting sensor 1 calibration.");
   uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
@@ -133,36 +113,6 @@ void loop()
   calibration_status = calibration2.calibrate(9); // 9 points used
   if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
   else Serial.println("Sensor 2 calibrated.");
-
-
-
-  // move motor to some position
-  stepper1.move(2000);
-  stepper1.enableOutputs();
-  
-  while (true)
-  {
-    if (limit_switch1.get_button_state() == true) error_handler("Limit switch 1 pressed.");
-    stepper1.run();
-    if (!stepper1.isRunning()) break;
-  }
-  
-  stepper1.disableOutputs();
-
-
-  // move motor to some position
-  stepper2.move(1000);
-  stepper2.enableOutputs();
-  
-  while (true)
-  {
-    if (limit_switch2.get_button_state() == true) error_handler("Limit switch 2 pressed.");
-    stepper2.run();
-    if (!stepper2.isRunning()) break;
-  }
-  
-  stepper2.disableOutputs();
-  
 
 
   // try to update sensor value
@@ -184,7 +134,7 @@ void loop()
   calibration1.calculate_step(sensor1.m_dPhi_xz, motor_step);
   Serial.print("Motor 1 step: ");
   Serial.println(motor_step);
-  
+
 
 
   // try to update sensor value
@@ -206,9 +156,33 @@ void loop()
   calibration2.calculate_step(sensor2.m_dPhi_xz, motor_step);
   Serial.print("Motor 2 step: ");
   Serial.println(motor_step);
-  
 
-  while(true);
+
+  while (true);
+}
+
+
+void moveMotors(int32_t posMotor1, int32_t posMotor2)
+{
+  stepper1.move(posMotor1);
+  stepper1.enableOutputs();
+  
+  stepper2.move(posMotor2);
+  stepper2.enableOutputs();
+
+  while (true)
+  {
+    if (limit_switch1.get_button_state() == true) error_handler("Limit switch 1 pressed.");
+    stepper1.run();
+    
+    if (limit_switch2.get_button_state() == true) error_handler("Limit switch 2 pressed.");
+    stepper2.run();
+    
+    if ((!stepper1.isRunning()) && (!stepper2.isRunning())) break;
+  }
+
+  stepper1.disableOutputs();
+  stepper2.disableOutputs();
 }
 
 
@@ -227,14 +201,10 @@ void decodeCommand(const message_t& msg)
         }
       case (COMMAND_MOVE_MOTOR):
         {
-          Serial.println("move motor!");
           tlv_motor_position_t position;
           if (message_tlv_get_motor_position(&msg, &position) == MESSAGE_SUCCESS)
           {
-            Serial.print("received position: ");
-            Serial.print("x :"); Serial.print(position.x);
-            Serial.print("y :"); Serial.print(position.y);
-            Serial.println();
+            moveMotors(position.x, position.y);
           }
           break;
         }
@@ -250,7 +220,8 @@ void decodeCommand(const message_t& msg)
         }
       case (COMMAND_HOMING):
         {
-          Serial.println("homing!");
+          // homing sequence on both axes
+          homing();
           break;
         }
       case (COMMAND_RESTORE_MOTOR):
