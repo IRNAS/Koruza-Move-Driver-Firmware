@@ -53,6 +53,7 @@ typedef enum {
   COMMAND_HOMING = 6,
   COMMAND_RESTORE_MOTOR = 7,
   COMMAND_GET_SENSOR_VALUE = 8,
+  COMMAND_CALIBRATE_SENSORS = 9,
 } tlv_command_t;
 
 

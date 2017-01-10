@@ -6,6 +6,7 @@
 #include "calibration.h"
 #include "EEPROM_manager.h"
 #include "message.h"
+#include "communication.h"
 
 const int limit_switch1_pin = 4;
 const int limit_switch2_pin = 3;
@@ -102,19 +103,10 @@ void setup()
 
 void loop()
 {
-  // calibrate sensor 1
-  //Serial.println("Starting sensor 1 calibration.");
-  uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
-  //if (calibration_status != 0x00) error_handler("Sensor 1 calibration failed: 0x" + String(calibration_status, HEX));
-  //else Serial.println("Sensor 1 calibrated.");
-
-  // calibrate sensor 2
-  //Serial.println("Starting sensor 2 calibration.");
-  calibration_status = calibration2.calibrate(9); // 9 points used
-  //if (calibration_status != 0x00) error_handler("Sensor 2 calibration failed: 0x" + String(calibration_status, HEX));
-  //else Serial.println("Sensor 2 calibrated.");
-
-  while (true);
+  while (Serial.available())
+  {
+    receiveBytes((uint8_t)Serial.read());
+  }
 }
 
 
@@ -122,7 +114,7 @@ void moveMotors(int32_t posMotor1, int32_t posMotor2)
 {
   stepper1.move(posMotor1);
   stepper1.enableOutputs();
-  
+
   stepper2.move(posMotor2);
   stepper2.enableOutputs();
 
@@ -137,10 +129,10 @@ void moveMotors(int32_t posMotor1, int32_t posMotor2)
     {
       break;
     }
-    
+
     stepper1.run();
     stepper2.run();
-    
+
     if ((!stepper1.isRunning()) && (!stepper2.isRunning())) break;
   }
 
@@ -160,6 +152,12 @@ void decodeCommand(const message_t& msg)
       case (COMMAND_GET_STATUS):
         {
           Serial.println("get status!");
+          break;
+        }
+      case (COMMAND_CALIBRATE_SENSORS):
+        {
+          uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
+          calibration_status = calibration2.calibrate(9); // 9 points used
           break;
         }
       case (COMMAND_GET_SENSOR_VALUE):
