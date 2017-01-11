@@ -8,19 +8,19 @@
 
 enum class CalibrationState
 {
-	STANDBY,
-	NEXT_POINT,
-	RUN_MOTOR,
-	READ_SENSOR,
-	ERROR
+  STANDBY,
+  NEXT_POINT,
+  RUN_MOTOR,
+  READ_SENSOR,
+  ERROR
 };
 
 enum class CalibrationStatus
 {
-	OK,
-	SENSOR_COMM_ERROR,
-	SENSOR_BUSSY,
-	LIMIT_SWITCH_PRESSED
+  OK,
+  SENSOR_COMM_ERROR,
+  SENSOR_BUSSY,
+  LIMIT_SWITCH_PRESSED
 };
 
 class Calibration
@@ -29,31 +29,31 @@ class Calibration
     Switch& m_limit_switch;
     TLV493D& m_sensor;
     AccelStepper& m_stepper;
-	
-	CalibrationState m_state;
-	CalibrationStatus m_status;
-	
-	long m_N_cal_points;
-	long m_current_point;
-	double m_angle_meas_unwrap;
+
+    CalibrationState m_state;
+    CalibrationStatus m_status;
+
+    long m_N_cal_points;
+    long m_current_point;
+    double m_angle_meas_unwrap;
     long m_interval;
     double m_prev_value;
-	
+
   public:
-	// calibration parameters
+    // calibration parameters
     long m_start_step;
     static const long m_steps_per_revolution;
     double m_start_point;
     double m_end_point;
-    
+
   public:
     Calibration(Switch& limit_switch, TLV493D& sensor, AccelStepper& stepper);
     bool start(const long N_points);
-	void reset();
+    void reset();
     uint8_t calculate_step(long& motor_step);
-	void process();
-	CalibrationState currentState();
-	CalibrationStatus currentStatus();
+    void process();
+    CalibrationState currentState();
+    CalibrationStatus currentStatus();
 
   private:
     double phase_unwrap(const double angle_0_2pi, const double prev_value, long& interval);

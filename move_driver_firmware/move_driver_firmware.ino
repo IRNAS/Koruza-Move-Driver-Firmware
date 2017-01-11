@@ -5,8 +5,7 @@
 #include "homing.h"
 #include "calibration.h"
 #include "EEPROM_manager.h"
-#include "message.h"
-#include "communication.h"
+
 
 const int limit_switch1_pin = 4;
 const int limit_switch2_pin = 3;
@@ -42,10 +41,8 @@ Calibration calibration1(limit_switch1, sensor1, stepper1);
 Calibration calibration2(limit_switch2, sensor2, stepper2);
 
 
-uint8_t status_sensor1;
-uint8_t status_sensor2;
-bool status_EEPROM;
-
+Homing homing1(limit_switch1, stepper1);
+Homing homing2(limit_switch2, stepper2);
 
 
 void setup()
@@ -80,10 +77,14 @@ void setup()
 
 
   // initialize sensor 1
-  status_sensor1 = sensor1.init(LOW); // address = 0x1F
+  uint8_t status_sensor1 = sensor1.init(LOW); // address = 0x1F
+  Serial.print("Sensor 1 status: 0x");
+  Serial.println(status_sensor1, HEX);
 
   // initialize sensor 2
-  status_sensor2 = sensor2.init(HIGH); // address = 0x5E
+  uint8_t status_sensor2 = sensor2.init(HIGH); // address = 0x5E
+  Serial.print("Sensor 2 status: 0x");
+  Serial.println(status_sensor2, HEX);
 
 
   // initialize stepper motor 1
@@ -97,16 +98,21 @@ void setup()
   stepper2.disableOutputs();
 
   delay(1000);
+  Serial.println("starting");
 
-  status_EEPROM = EEPROMload();
+  homing1.reset();
+  homing1.start();
+  homing2.reset();
+  homing2.start();
 }
 
 void loop()
 {
-  while (Serial.available())
-  {
-    receiveBytes((uint8_t)Serial.read());
-  }
+  Serial.print("stepper1: "); Serial.println(stepper1.currentPosition());
+  homing1.process();
+
+  Serial.print("stepper2: "); Serial.println(stepper2.currentPosition());
+  homing2.process();
 }
 
 
@@ -138,70 +144,4 @@ void moveMotors(int32_t posMotor1, int32_t posMotor2)
 
   stepper1.disableOutputs();
   stepper2.disableOutputs();
-}
-
-
-// decode command callback function
-void decodeCommand(const message_t& msg)
-{
-  tlv_command_t parsed_command;
-  if (message_tlv_get_command(&msg, &parsed_command) == MESSAGE_SUCCESS)
-  {
-    switch (parsed_command)
-    {
-      case (COMMAND_GET_STATUS):
-        {
-          Serial.println("get status!");
-          break;
-        }
-      case (COMMAND_CALIBRATE_SENSORS):
-        {
-          uint8_t calibration_status = calibration1.calibrate(9); // 9 points used
-          calibration_status = calibration2.calibrate(9); // 9 points used
-          break;
-        }
-      case (COMMAND_GET_SENSOR_VALUE):
-        {
-          long motor1_step;
-          uint8_t status_sensor1 = calibration1.calculate_step(motor1_step);
-          long motor2_step;
-          uint8_t status_sensor2 = calibration2.calculate_step(motor2_step);
-          break;
-        }
-      case (COMMAND_MOVE_MOTOR):
-        {
-          tlv_motor_position_t position;
-          if (message_tlv_get_motor_position(&msg, &position) == MESSAGE_SUCCESS)
-          {
-            moveMotors(position.x, position.y);
-          }
-          break;
-        }
-      case (COMMAND_REBOOT):
-        {
-          Serial.println("reboot!");
-          break;
-        }
-      case (COMMAND_FIRMWARE_UPGRADE):
-        {
-          Serial.println("firmware upgrade!");
-          break;
-        }
-      case (COMMAND_HOMING):
-        {
-          // homing sequence on both axes
-          homing();
-          break;
-        }
-      case (COMMAND_RESTORE_MOTOR):
-        {
-          Serial.println("restore motor!");
-          break;
-        }
-      default:
-        {
-          break;
-        }
-    }
-  }
 }

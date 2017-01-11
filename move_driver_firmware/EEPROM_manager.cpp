@@ -6,10 +6,10 @@
 
 
 EEPROM_manager::EEPROM_manager(AccelStepper& stepper1, AccelStepper& stepper2, Calibration& calibration1, Calibration& calibration2) :
-	AccelStepper& m_stepper1(stepper1),
-	AccelStepper& m_stepper2(stepper2),
-	Calibration& m_calibration1(calibration1),
-	Calibration& m_calibration2(calibration2)
+  m_stepper1(stepper1),
+  m_stepper2(stepper2),
+  m_calibration1(calibration1),
+  m_calibration2(calibration2)
 {
 }
 
@@ -32,7 +32,7 @@ unsigned long EEPROM_manager::EEPROM_CRC()
     crc = crc_table[(crc ^ (EEPROM[index] >> 4)) & 0x0f] ^ (crc >> 4);
     crc = ~crc;
   }
-  
+
   return crc;
 }
 
@@ -40,10 +40,10 @@ unsigned long EEPROM_manager::EEPROM_CRC()
 void EEPROM_manager::EEPROMsave()
 {
   unsigned long address = 0;
-  
+
   EEPROM.put(address, m_stepper1.currentPosition());
   address += sizeof(long);
-  
+
   EEPROM.put(address, m_stepper2.currentPosition());
   address += sizeof(long);
 
@@ -111,7 +111,7 @@ bool EEPROM_manager::EEPROMload()
 
   unsigned long CRC_calc = EEPROM_CRC();
 
-  if(CRC != CRC_calc) return true; // error
+  if (CRC != CRC_calc) return true; // error
 
   m_stepper1.setCurrentPosition(stepper1_position);
   m_stepper2.setCurrentPosition(stepper2_position);
@@ -123,6 +123,6 @@ bool EEPROM_manager::EEPROMload()
   m_calibration2.m_start_step = cal2_m_start_step;
   m_calibration2.m_start_point = cal2_m_start_point;
   m_calibration2.m_end_point = cal2_m_end_point;
-  
+
   return false; // success
 }

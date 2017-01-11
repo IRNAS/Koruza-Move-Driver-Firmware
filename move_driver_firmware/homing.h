@@ -6,34 +6,32 @@
 
 enum class HomingState
 {
-	STANDBY,
-	INPROGRESS,
-	ERROR
+  STANDBY,
+  INPROGRESS,
+  ERROR
 };
 
 enum class HomingStatus
 {
-	OK,
-	ERROR
+  OK,
+  ERROR
 };
 
 class Homing
 {
-private:
-	Switch& m_limit_switch1;
-	Switch& m_limit_switch2;
-	AccelStepper& m_stepper1;
-	AccelStepper& m_stepper2;
-	
-	HomingState m_state;
-	HomingStatus m_status;
-public:
-	Homing(Switch& limit_switch1, Switch& limit_switch2, AccelStepper& stepper1, AccelStepper& stepper2);
-	HomingState currentState();
-	HomingStatus currentStatus();
-	void process();
-	void reset();
-	void start();
+  private:
+    Switch& m_limit_switch;
+    AccelStepper& m_stepper;
+
+    HomingState m_state;
+    HomingStatus m_status;
+  public:
+    Homing(Switch& limit_switch, AccelStepper& stepper);
+    HomingState currentState();
+    HomingStatus currentStatus();
+    void process();
+    void reset();
+    void start();
 };
 
 #endif
