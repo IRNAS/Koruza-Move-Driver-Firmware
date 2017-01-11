@@ -104,44 +104,27 @@ void setup()
   homing1.start();
   homing2.reset();
   homing2.start();
+
+  calibration1.reset();
+  calibration1.start(9);
+  calibration2.reset();
+  calibration2.start(9);
 }
 
 void loop()
 {
   Serial.print("stepper1: "); Serial.println(stepper1.currentPosition());
-  homing1.process();
-
   Serial.print("stepper2: "); Serial.println(stepper2.currentPosition());
-  homing2.process();
+
+  Serial.print("calibration1 state: "); Serial.println(convertToString(calibration1.currentState()));
+  Serial.print("calibration2 state: "); Serial.println(convertToString(calibration2.currentState()));
+
+  Serial.print("calibration1 status: "); Serial.println(convertToString(calibration1.currentStatus()));
+  Serial.print("calibration2 status: "); Serial.println(convertToString(calibration2.currentStatus()));
+
+  calibration1.process();
+  calibration2.process();
 }
 
 
-void moveMotors(int32_t posMotor1, int32_t posMotor2)
-{
-  stepper1.move(posMotor1);
-  stepper1.enableOutputs();
 
-  stepper2.move(posMotor2);
-  stepper2.enableOutputs();
-
-  while (true)
-  {
-    if (limit_switch1.get_button_state() == true)
-    {
-      break;
-    }
-
-    if (limit_switch2.get_button_state() == true)
-    {
-      break;
-    }
-
-    stepper1.run();
-    stepper2.run();
-
-    if ((!stepper1.isRunning()) && (!stepper2.isRunning())) break;
-  }
-
-  stepper1.disableOutputs();
-  stepper2.disableOutputs();
-}

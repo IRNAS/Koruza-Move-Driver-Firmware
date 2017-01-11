@@ -1,6 +1,7 @@
 #ifndef calibration_h
 #define calibration_h
 
+#include "Arduino.h"
 #include "switch.h" // https://github.com/IRNAS/Arduino-Switch-Debounce
 #include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
@@ -15,6 +16,8 @@ enum class CalibrationState
   ERROR
 };
 
+extern String convertToString(const CalibrationState& state);
+
 enum class CalibrationStatus
 {
   OK,
@@ -22,6 +25,8 @@ enum class CalibrationStatus
   SENSOR_BUSSY,
   LIMIT_SWITCH_PRESSED
 };
+
+extern String convertToString(const CalibrationStatus& status);
 
 class Calibration
 {

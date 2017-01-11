@@ -6,6 +6,31 @@
 #include <math.h>
 
 
+String convertToString(const CalibrationState& state)
+{
+  switch (state)
+  {
+    case (CalibrationState::STANDBY): return (String("STANDBY"));
+    case (CalibrationState::NEXT_POINT): return (String("NEXT_POINT"));
+    case (CalibrationState::RUN_MOTOR): return (String("RUN_MOTOR"));
+    case (CalibrationState::READ_SENSOR): return (String("READ_SENSOR"));
+    case (CalibrationState::ERROR): return (String("ERROR"));
+  }
+}
+
+
+String convertToString(const CalibrationStatus& status)
+{
+  switch (status)
+  {
+    case (CalibrationStatus::OK): return (String("OK"));
+    case (CalibrationStatus::SENSOR_COMM_ERROR): return (String("SENSOR_COMM_ERROR"));
+    case (CalibrationStatus::SENSOR_BUSSY): return (String("SENSOR_BUSSY"));
+    case (CalibrationStatus::LIMIT_SWITCH_PRESSED): return (String("LIMIT_SWITCH_PRESSED"));
+  }
+}
+
+
 const long Calibration::m_steps_per_revolution = 4096;
 
 
@@ -206,18 +231,21 @@ void Calibration::process()
           m_state = CalibrationState::ERROR;
           break;
         }
+
+        m_stepper.run();
+
         if (!m_stepper.isRunning())
         {
           m_state = CalibrationState::READ_SENSOR;
           break;
         }
 
-        m_stepper.run();
-
         break;
       }
     case (CalibrationState::READ_SENSOR):
       {
+        delay(1000);
+        
         int count_tries = 1000;
         uint8_t status_sensor = 0x00;
 
@@ -245,7 +273,11 @@ void Calibration::process()
 
               if (m_current_point == 0) m_start_point = m_angle_meas_unwrap;
 
-              if (m_current_point < m_N_cal_points) m_current_point ++;
+              if (m_current_point < m_N_cal_points)
+              {
+                m_state = CalibrationState::NEXT_POINT;
+                m_current_point ++;
+              }
               else
               {
                 m_end_point = m_angle_meas_unwrap;
