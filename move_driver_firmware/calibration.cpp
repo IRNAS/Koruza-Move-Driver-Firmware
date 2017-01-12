@@ -217,8 +217,11 @@ void Calibration::process()
       {
         // movement relative to current position
         m_stepper.moveTo(m_start_step + m_current_point * m_steps_per_revolution / (m_N_cal_points - 1));
-        //m_stepper.moveTo(m_current_point * m_steps_per_revolution / (m_N_cal_points - 1)); // NOT WORKING CORRECTLY ???
 
+//        Serial.println("NEXT_POINT");
+//        Serial.print("m_stepper.currentPosition(): "); Serial.println(m_stepper.currentPosition());
+//        Serial.print("m_stepper.distanceToGo(): "); Serial.println(m_stepper.distanceToGo());
+        
         m_state = CalibrationState::RUN_MOTOR;
 
         break;
@@ -227,6 +230,8 @@ void Calibration::process()
       {
         if ((m_limit_switch.get_button_state() == true) && (m_stepper.distanceToGo() < 0))
         {
+//          Serial.println("m_limit_switch pressed");
+          
           m_status = CalibrationStatus::LIMIT_SWITCH_PRESSED;
           m_state = CalibrationState::ERROR;
           break;
@@ -236,6 +241,9 @@ void Calibration::process()
 
         if (!m_stepper.isRunning())
         {
+//          Serial.println("RUN_MOTOR");
+//          Serial.print("m_stepper.currentPosition(): "); Serial.println(m_stepper.currentPosition());
+//          Serial.print("m_stepper.distanceToGo(): "); Serial.println(m_stepper.distanceToGo());
           m_state = CalibrationState::READ_SENSOR;
           break;
         }
@@ -259,19 +267,30 @@ void Calibration::process()
         {
           case (0x00):
             {
+              //Serial.println("READ_SENSOR");
+              //Serial.print("m_stepper.currentPosition(): "); Serial.println(m_stepper.currentPosition());
+              //Serial.print("m_stepper.distanceToGo(): "); Serial.println(m_stepper.distanceToGo());
+              //Serial.print("m_current_point: "); Serial.println(m_current_point);
+              
               if (m_current_point == 0)
               {
                 m_interval = 0;
                 m_prev_value = m_sensor.m_dPhi_xz;
-                m_start_step = m_stepper.currentPosition();
               }
+
+              //Serial.print("m_prev_value: "); Serial.println(m_prev_value);
+              //Serial.print("m_interval: "); Serial.println(m_interval);
 
               m_angle_meas_unwrap = phase_unwrap(m_sensor.m_dPhi_xz, m_prev_value, m_interval);
               m_prev_value = m_angle_meas_unwrap;
 
               if (m_current_point == 0) m_start_point = m_angle_meas_unwrap;
 
-              if (m_current_point < m_N_cal_points)
+              //Serial.print("m_sensor.m_dPhi_xz: "); Serial.println(m_sensor.m_dPhi_xz);
+              //Serial.print("m_angle_meas_unwrap: "); Serial.println(m_angle_meas_unwrap);
+              //Serial.print("m_interval: "); Serial.println(m_interval);
+
+              if (m_current_point < m_N_cal_points - 1)
               {
                 m_state = CalibrationState::NEXT_POINT;
                 m_current_point ++;
@@ -281,6 +300,11 @@ void Calibration::process()
                 m_end_point = m_angle_meas_unwrap;
                 m_stepper.disableOutputs();
                 m_state = CalibrationState::STANDBY;
+
+                long motor_step;
+                uint8_t status_cal = calculate_step(motor_step);
+                //Serial.print("status_cal: "); Serial.println(status_cal);
+                //Serial.print("motor_step: "); Serial.println(motor_step);
               }
               break;
             }
