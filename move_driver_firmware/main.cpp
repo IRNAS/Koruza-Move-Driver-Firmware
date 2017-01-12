@@ -75,6 +75,8 @@ move_state_t move_state = MOVE_IDLE_STATE;
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
 
+tlv_motor_position_t position_test;
+
 void init_mcu(void)
 {
   // begin serial communication
@@ -142,17 +144,12 @@ void init_devices(void)
 */
 static void runm(AccelStepper *stepper, Switch *sw)
 {
+
   /* Check if end sw is reached */   
   if(sw->get_button_state() == true)
   {
     /* Negative direction end */
     if(stepper->targetPosition()<stepper->currentPosition())
-    {
-      stepper->stop();
-      stepper->moveTo(stepper->currentPosition());
-    }
-    /* Positive direction end */
-    else if(stepper->targetPosition()>stepper->currentPosition())
     {
       stepper->stop();
       stepper->moveTo(stepper->currentPosition());
@@ -283,6 +280,18 @@ void communicate(void)
       send_bytes(&msg_send);
       message_free(&msg_send);
 
+      /* Message generator */
+//      Serial.println("Generated message: ");
+//      message_init(&msg_send);
+//      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
+//      position_test.x = 0;
+//      position_test.y = -1000000;
+//      message_tlv_add_motor_position(&msg_send, &position_test);
+//      message_tlv_add_checksum(&msg_send);
+//      send_bytes(&msg_send);
+//      message_free(&msg_send);     
+//      Serial.println();
+      
       com_state = COM_END_STATE;
       break;
 
