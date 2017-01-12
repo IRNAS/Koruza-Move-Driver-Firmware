@@ -72,6 +72,7 @@ volatile koruza_move_t koruza_move;
 com_state_t com_state = COM_IDLE_STATE;
 
 tlv_motor_position_t current_motor_position;
+tlv_motor_position_t new_motor_position;
 
 void init_mcu(void)
 {
@@ -119,11 +120,15 @@ void init_devices(void)
   // initialize stepper motor 1
   stepper1.setCurrentPosition(0);
   stepper1.setMaxSpeed(1000);
+  stepper1.setSpeed(500);
+  stepper1.setAcceleration(500);
   stepper1.disableOutputs();
 
   // initialize stepper motor 2
   stepper2.setCurrentPosition(0);
   stepper2.setMaxSpeed(1000);
+  stepper2.setSpeed(500);
+  stepper2.setAcceleration(500);
   stepper2.disableOutputs();
 
   delay(1000);
@@ -136,7 +141,15 @@ void init_devices(void)
 */
 void run_motors(void)
 {
+  /* First block, always do this part
+     * move morors if nesseseru,
+     * check end sw
+     * check encoder error calculation
+     * update the end sw and encoder error status
+  */
   
+  stepper1.run();
+  stepper2.run();
 }
 
 /**
@@ -182,6 +195,14 @@ void communicate(void)
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
       current_motor_position.x = stepper1.currentPosition();
       current_motor_position.y = stepper2.currentPosition();
+      
+      /* Debug for new received motor position */
+      Serial.print("currnet motor position: (");
+      Serial.print(current_motor_position.x);
+      Serial.print(", ");
+      Serial.print(current_motor_position.y);
+      Serial.println(")");
+        
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
@@ -191,11 +212,40 @@ void communicate(void)
       break;
 
     case COM_MOVE_MOTOR_STATE:
+      /* Get new coordinates from received message */
+      if(message_tlv_get_motor_position(&msg_parsed, &new_motor_position) != MESSAGE_SUCCESS)
+      {
+        message_free(&msg_parsed);
+        com_state = COM_ERROR_STATE;
+      }
+      else
+      {
+        /* Debug for new received motor position */
+        Serial.print("new motor position: (");
+        Serial.print(new_motor_position.x);
+        Serial.print(", ");
+        Serial.print(new_motor_position.y);
+        Serial.println(")");
 
+        /* Set motor state mashine new state
+            MOVE_RUN_STATE = 1,
+            MOVE_HOMING_STATE = 2,
+            MOVE_CALIBRATION_STATE = 3,
+        */
+
+        /* Set new coordinates for motors */
+        stepper1.moveTo((long)new_motor_position.x);
+        stepper2.moveTo((long)new_motor_position.y);
+        
+        com_state = COM_END_STATE;
+      }
       break;
 
     case COM_HOMING_STATE:
+      /* Debug the homming routine */
+      Serial.println("homing");
 
+      com_state = COM_END_STATE;
       break;
 
     case COM_CALIBRATION_STATE:
@@ -207,6 +257,9 @@ void communicate(void)
       com_state = COM_END_STATE;
       break;
     case COM_END_STATE:
+      /* Free the received mesage form the memory */
+      message_free(&msg_parsed);
+      
       command_received = false;
       com_state = COM_IDLE_STATE;
       break;
