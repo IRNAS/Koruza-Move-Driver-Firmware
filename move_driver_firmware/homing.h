@@ -17,6 +17,9 @@ enum class HomingStatus
   ERROR
 };
 
+String convertToString(const HomingState& state);
+String convertToString(const HomingStatus& status);
+
 class Homing
 {
   private:

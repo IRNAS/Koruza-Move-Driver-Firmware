@@ -2,6 +2,28 @@
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
 #include "homing.h"
 
+
+String convertToString(const HomingState& state)
+{
+  switch (state)
+  {
+    case (HomingState::STANDBY): return (String("STANDBY"));
+    case (HomingState::INPROGRESS): return (String("INPROGRESS"));
+    case (HomingState::ERROR): return (String("ERROR"));
+  }
+}
+
+
+String convertToString(const HomingStatus& status)
+{
+  switch (status)
+  {
+    case (HomingStatus::OK): return (String("OK"));
+    case (HomingStatus::ERROR): return (String("ERROR"));
+  }
+}
+
+
 Homing::Homing(Switch& limit_switch, AccelStepper& stepper) :
   m_limit_switch(limit_switch),
   m_stepper(stepper)

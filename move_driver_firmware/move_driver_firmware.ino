@@ -45,6 +45,10 @@ Homing homing1(limit_switch1, stepper1);
 Homing homing2(limit_switch2, stepper2);
 
 
+bool sensor1_calibrated = false;
+bool sensor2_calibrated = false;
+
+
 void setup()
 {
   // begin serial communication
@@ -106,9 +110,7 @@ void setup()
   homing2.start();
 
   calibration1.reset();
-  calibration1.start(9);
   calibration2.reset();
-  calibration2.start(9);
 }
 
 void loop()
@@ -116,14 +118,68 @@ void loop()
   Serial.print("stepper1: "); Serial.println(stepper1.currentPosition());
   Serial.print("stepper2: "); Serial.println(stepper2.currentPosition());
 
-  Serial.print("calibration1 state: "); Serial.println(convertToString(calibration1.currentState()));
-  Serial.print("calibration2 state: "); Serial.println(convertToString(calibration2.currentState()));
+//  if(homing1.currentState() == HomingState::STANDBY)
+//  {
+//    Serial.print("homing1 state: "); Serial.println(convertToString(homing1.currentState()));
+//    Serial.print("homing1 status: "); Serial.println(convertToString(homing1.currentStatus()));
+//
+//    Serial.print("calibration1 state: "); Serial.println(convertToString(calibration1.currentState()));
+//    Serial.print("calibration1 status: "); Serial.println(convertToString(calibration1.currentStatus()));
+//  }
 
-  Serial.print("calibration1 status: "); Serial.println(convertToString(calibration1.currentStatus()));
-  Serial.print("calibration2 status: "); Serial.println(convertToString(calibration2.currentStatus()));
+//  if(homing2.currentState() == HomingState::STANDBY)
+//  {
+//    Serial.print("homing2 state: "); Serial.println(convertToString(homing2.currentState()));
+//    Serial.print("homing2 status: "); Serial.println(convertToString(homing2.currentStatus()));
+//
+//    Serial.print("calibration2 state: "); Serial.println(convertToString(calibration2.currentState()));
+//    Serial.print("calibration2 status: "); Serial.println(convertToString(calibration2.currentStatus()));
+//  }
+
+  homing1.process();
+  homing2.process();
 
   calibration1.process();
   calibration2.process();
+
+  if((homing1.currentState() == HomingState::STANDBY) && (calibration1.currentState() == CalibrationState::STANDBY) && !sensor1_calibrated)
+  {
+    Serial.println("calibration1 started");
+    calibration1.start(9);
+    sensor1_calibrated = true;
+    delay(2000);
+  }
+  else if((homing1.currentState() == HomingState::STANDBY) && (calibration1.currentState() == CalibrationState::STANDBY) && sensor1_calibrated)
+  {
+    long motor_step1;
+    uint8_t status_cal1 = calibration1.calculate_step(motor_step1);
+    Serial.print("status_cal1: "); Serial.println(status_cal1);
+    Serial.print("motor_step1: "); Serial.println(motor_step1);
+  }
+
+  if((homing2.currentState() == HomingState::STANDBY) && (calibration2.currentState() == CalibrationState::STANDBY) && !sensor2_calibrated)
+  {
+    Serial.println("calibration2 started");
+    calibration2.start(9);
+    sensor2_calibrated = true;
+    delay(2000);
+  }
+  else if((homing2.currentState() == HomingState::STANDBY) && (calibration2.currentState() == CalibrationState::STANDBY) && sensor2_calibrated)
+  {
+    long motor_step2;
+    uint8_t status_cal2 = calibration2.calculate_step(motor_step2);
+    Serial.print("status_cal2: "); Serial.println(status_cal2);
+    Serial.print("motor_step2: "); Serial.println(motor_step2);
+  }
+
+  if (homing1.currentState() == HomingState::ERROR) Serial.println("homing1 error");
+  if (homing2.currentState() == HomingState::ERROR) Serial.println("homing2 error");
+
+  if (calibration1.currentState() == CalibrationState::ERROR) Serial.println("calibration1 error");
+  if (calibration2.currentState() == CalibrationState::ERROR) Serial.println("calibration2 error");
+
+  if (calibration1.currentState() == CalibrationState::READ_SENSOR) delay(2000);
+  if (calibration2.currentState() == CalibrationState::READ_SENSOR) delay(2000);
 }
 
 

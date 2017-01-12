@@ -37,10 +37,7 @@ const long Calibration::m_steps_per_revolution = 4096;
 Calibration::Calibration(Switch& limit_switch, TLV493D& sensor, AccelStepper& stepper) :
   m_limit_switch(limit_switch),
   m_sensor(sensor),
-  m_stepper(stepper),
-  m_start_point(0.0),
-  m_end_point(0.0),
-  m_start_step(0)
+  m_stepper(stepper)
 {
   m_state = CalibrationState::STANDBY;
   m_status = CalibrationStatus::OK;
@@ -176,6 +173,8 @@ bool Calibration::start(const long N_points)
         m_stepper.setAcceleration(50);
         m_stepper.enableOutputs();
 
+        m_start_step = m_stepper.currentPosition();
+
         m_state = CalibrationState::NEXT_POINT;
         break;
       }
@@ -218,6 +217,7 @@ void Calibration::process()
       {
         // movement relative to current position
         m_stepper.moveTo(m_start_step + m_current_point * m_steps_per_revolution / (m_N_cal_points - 1));
+        //m_stepper.moveTo(m_current_point * m_steps_per_revolution / (m_N_cal_points - 1)); // NOT WORKING CORRECTLY ???
 
         m_state = CalibrationState::RUN_MOTOR;
 
@@ -225,7 +225,7 @@ void Calibration::process()
       }
     case (CalibrationState::RUN_MOTOR):
       {
-        if (m_limit_switch.get_button_state() == true)
+        if ((m_limit_switch.get_button_state() == true) && (m_stepper.distanceToGo() < 0))
         {
           m_status = CalibrationStatus::LIMIT_SWITCH_PRESSED;
           m_state = CalibrationState::ERROR;
@@ -244,8 +244,6 @@ void Calibration::process()
       }
     case (CalibrationState::READ_SENSOR):
       {
-        delay(1000);
-        
         int count_tries = 1000;
         uint8_t status_sensor = 0x00;
 
