@@ -70,6 +70,7 @@ bool status_EEPROM;
 volatile koruza_move_t koruza_move;
 
 com_state_t com_state = COM_IDLE_STATE;
+move_state_t move_state = MOVE_IDLE_STATE;
 
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
@@ -137,19 +138,93 @@ void init_devices(void)
 }
 
 /**
+   This function run motor
+*/
+static void runm(AccelStepper *stepper, Switch *sw)
+{
+  /* Check if end sw is reached */   
+  if(sw->get_button_state() == true)
+  {
+    /* Negative direction end */
+    if(stepper->targetPosition()<stepper->currentPosition())
+    {
+      stepper->stop();
+      stepper->moveTo(stepper->currentPosition());
+    }
+    /* Positive direction end */
+    else if(stepper->targetPosition()>stepper->currentPosition())
+    {
+      stepper->stop();
+      stepper->moveTo(stepper->currentPosition());
+    }
+  }
+
+  /* Motor move
+     motor pins are enabled only while moving to conserve power
+  */
+  if(stepper->currentPosition()!=stepper->targetPosition()){
+    stepper->enableOutputs();
+    stepper->run();
+  }
+  else{
+    stepper->stop();
+    stepper->disableOutputs();
+  }
+}
+
+/**
    Handles the motor part of the firmware, movign, homing, calibration.
 */
 void run_motors(void)
 {
+  /* End sw status
+     * false - end sw not pressed
+     * true - end sw pressed
+  */
+  bool end_sw_1 = false;
+  bool end_sw_2 = false;
   /* First block, always do this part
      * move morors if nesseseru,
-     * check end sw
      * check encoder error calculation
      * update the end sw and encoder error status
   */
+  runm(&stepper1, &limit_switch1); 
+  runm(&stepper2, &limit_switch2);
+
+  //add here, encoder error calculation
+
+  end_sw_1 = limit_switch1.get_button_state();
+  end_sw_2 = limit_switch2.get_button_state();
+
+  /* Motor move state mashine */
+  switch(move_state)
+  {
+    case MOVE_IDLE_STATE:
+      /* Motors are waiting */
+      break;
+
+    case MOVE_HOMING_STATE:
+      /* Do the homing routine,
+         check the end_sw_1 and end_sw_2 for end sw status
+      */
+      break;
+
+    case MOVE_CALIBRATION_STATE:
+      /* Do the homing calibration,
+         check the end_sw_1 and end_sw_2 for end sw status
+      */
+      break;
+
+    case MOVE_ERROR_STATE:
+
+      break;
+
+    default:
+      move_state = MOVE_IDLE_STATE;
+      break;
+  }
   
-  stepper1.run();
-  stepper2.run();
+
 }
 
 /**
