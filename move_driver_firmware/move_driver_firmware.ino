@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #include "switch.h" // https://github.com/IRNAS/Arduino-Switch-Debounce
 #include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
 #include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
@@ -111,10 +112,19 @@ void setup()
 
   calibration1.reset();
   calibration2.reset();
+=======
+#include "main.h"
+
+void setup()
+{
+  init_mcu();
+  init_devices();
+>>>>>>> 8c5cc17fef4248f06efc523945d6b85ff6157ea9
 }
 
 void loop()
 {
+<<<<<<< HEAD
   //homing1.process();
   homing2.process();
 
@@ -163,3 +173,11 @@ void loop()
 
 
 
+=======
+  run_motors();
+  communicate();
+  receive_bytes();
+}
+
+
+>>>>>>> 8c5cc17fef4248f06efc523945d6b85ff6157ea9
