@@ -177,12 +177,7 @@ static void runm(AccelStepper *stepper, Switch *sw)
 */
 void run_motors(void)
 {
-  /* End sw status
-     * false - end sw not pressed
-     * true - end sw pressed
-  */
-  bool end_sw_1 = false;
-  bool end_sw_2 = false;
+
   /* First block, always do this part
      * move morors if nesseseru,
      * check encoder error calculation
@@ -192,9 +187,6 @@ void run_motors(void)
   runm(&stepper2, &limit_switch2);
 
   //add here, encoder error calculation
-
-  end_sw_1 = limit_switch1.get_button_state();
-  end_sw_2 = limit_switch2.get_button_state();
 
   /* Motor move state mashine */
   switch(move_state)
@@ -219,7 +211,7 @@ void run_motors(void)
       /* Do the homing routine,
          check the end_sw_1 and end_sw_2 for end sw status
       */
-      if(homing_check(end_sw_1, end_sw_2, &stepper1, &stepper2) == true)
+      if(homing_check(&limit_switch1, &stepper1) && homing_check(&limit_switch2, &stepper2))
       {
         move_state = MOVE_IDLE_STATE;
         do_homing = false;

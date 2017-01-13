@@ -41,6 +41,6 @@ class Homing
   Function for homing
   Whating for both end sw, and then sending motors to new zero
 */
-bool homing_check(bool end_sw_1, bool end_sw_2, AccelStepper *stepper_1, AccelStepper *stepper_2);
+bool homing_check(Switch *end_sw, AccelStepper *stepper);
 
 #endif

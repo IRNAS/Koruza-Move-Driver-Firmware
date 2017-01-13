@@ -121,15 +121,13 @@ void Homing::process()
   }
 }
 
-bool homing_check(bool end_sw_1, bool end_sw_2, AccelStepper *stepper_1, AccelStepper *stepper_2)
+bool homing_check(Switch *end_sw, AccelStepper *stepper)
 {
-  if(end_sw_1 == true && end_sw_2 == true)
+  if((end_sw->get_button_state() == true) && (stepper->distanceToGo() < 0))
   {
-     stepper_1->setCurrentPosition(-10000);
-     stepper_2->setCurrentPosition(-10000);
-     stepper_1->move(0);
-     stepper_2->move(0);
-     return true;
+    stepper->setCurrentPosition(-10000);
+    stepper->move(0);
+    return true;
   }
   else
   {
