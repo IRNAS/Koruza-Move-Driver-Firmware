@@ -12,5 +12,3 @@ void loop()
   communicate();
   receive_bytes();
 }
-
-

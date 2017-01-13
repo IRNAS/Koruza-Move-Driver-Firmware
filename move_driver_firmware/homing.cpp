@@ -3,73 +3,120 @@
 #include "homing.h"
 
 
-extern Switch limit_switch1;
-extern Switch limit_switch2;
-extern AccelStepper stepper1;
-extern AccelStepper stepper2;
-
-void homing()
+String convertToString(const HomingState& state)
 {
-  //Serial.println("Homing started.");
-
-  stepper1.setCurrentPosition(0);
-  stepper1.setMaxSpeed(1000);
-  stepper1.setSpeed(100);
-  stepper1.setAcceleration(50);
-  stepper1.move(-1000000);
-  stepper1.enableOutputs();
-
-  stepper2.setCurrentPosition(0);
-  stepper2.setMaxSpeed(1000);
-  stepper2.setSpeed(100);
-  stepper2.setAcceleration(50);
-  stepper2.move(-1000000);
-  stepper2.enableOutputs();
-
-  while (true)
+  switch (state)
   {
-    if ((limit_switch1.get_button_state() == true) && (stepper1.distanceToGo() < 0))
-    {
-      //Serial.println("Limit switch 1 pressed.");
-      delay(1000);
-      stepper1.setCurrentPosition(0);
-      stepper1.setMaxSpeed(1000);
-      stepper1.setSpeed(100);
-      stepper1.setAcceleration(50);
-      stepper1.move(10000);
-      continue;
-    }
+    case (HomingState::STANDBY): return (String("STANDBY"));
+    case (HomingState::INPROGRESS): return (String("INPROGRESS"));
+    case (HomingState::ERROR): return (String("ERROR"));
+  }
+}
 
-    if ((limit_switch2.get_button_state() == true) && (stepper2.distanceToGo() < 0))
-    {
-      //Serial.println("Limit switch 2 pressed.");
-      delay(1000);
-      stepper2.setCurrentPosition(0);
-      stepper2.setMaxSpeed(1000);
-      stepper2.setSpeed(100);
-      stepper2.setAcceleration(50);
-      stepper2.move(10000);
-      continue;
-    }
 
-    //if (stepper1.distanceToGo() != 0) Serial.println("Stepper 1 moving.");
-    stepper1.run();
+String convertToString(const HomingStatus& status)
+{
+  switch (status)
+  {
+    case (HomingStatus::OK): return (String("OK"));
+    case (HomingStatus::ERROR): return (String("ERROR"));
+  }
+}
 
-    //if (stepper2.distanceToGo() != 0) Serial.println("Stepper 2 moving.");
-    stepper2.run();
 
-    if (stepper1.distanceToGo() == 0)
-    {
-      //Serial.println("Homing 1 finished.");
-      stepper1.disableOutputs();
-    }
+Homing::Homing(Switch& limit_switch, AccelStepper& stepper) :
+  m_limit_switch(limit_switch),
+  m_stepper(stepper)
+{
+  m_state = HomingState::STANDBY;
+  m_status = HomingStatus::OK;
+}
 
-    if (stepper2.distanceToGo() == 0)
-    {
-      //Serial.println("Homing 2 finished.");
-      stepper2.disableOutputs();
-    }
 
-    if ((stepper1.distanceToGo() == 0) && (stepper2.distanceToGo() == 0)) return;
+HomingState Homing::currentState()
+{
+  return m_state;
+}
+
+
+HomingStatus Homing::currentStatus()
+{
+  return m_status;
+}
+
+
+void Homing::reset()
+{
+  m_stepper.setCurrentPosition(0);
+  m_stepper.setMaxSpeed(1000);
+  m_stepper.setSpeed(100);
+  m_stepper.setAcceleration(50);
+  m_stepper.move(-1000000);
+  m_stepper.enableOutputs();
+
+  m_state = HomingState::STANDBY;
+  m_status = HomingStatus::OK;
+}
+
+
+void Homing::start()
+{
+  switch (m_state)
+  {
+    case (HomingState::STANDBY):
+      {
+        m_state = HomingState::INPROGRESS;
+        break;
+      }
+    case (HomingState::INPROGRESS):
+      {
+        break;
+      }
+    case (HomingState::ERROR):
+      {
+        reset();
+        start();
+        break;
+      }
+  }
+}
+
+
+void Homing::process()
+{
+  switch (m_state)
+  {
+    case (HomingState::STANDBY):
+      {
+        break;
+      }
+    case (HomingState::INPROGRESS):
+      {
+        if ((m_limit_switch.get_button_state() == true) && (m_stepper.distanceToGo() < 0))
+        {
+          m_stepper.setCurrentPosition(0);
+          m_stepper.setMaxSpeed(1000);
+          m_stepper.setSpeed(100);
+          m_stepper.setAcceleration(50);
+          m_stepper.move(10000);
+
+          break;
+        }
+
+        m_stepper.run();
+
+        if (m_stepper.distanceToGo() == 0)
+        {
+          m_stepper.disableOutputs();
+          m_state = HomingState::STANDBY;
+          return;
+        }
+
+        break;
+      }
+    case (HomingState::ERROR):
+      {
+        break;
+      }
   }
 }
