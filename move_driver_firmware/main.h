@@ -12,6 +12,7 @@
 
 #include "calibration.h"
 #include "communication.h"
+#include "homing.h"
 
 typedef enum{
 	COM_IDLE_STATE = 0,

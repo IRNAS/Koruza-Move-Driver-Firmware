@@ -67,10 +67,13 @@ uint8_t status_sensor1;
 uint8_t status_sensor2;
 bool status_EEPROM;
 
-volatile koruza_move_t koruza_move;
+//volatile koruza_move_t koruza_move;
 
 com_state_t com_state = COM_IDLE_STATE;
 move_state_t move_state = MOVE_IDLE_STATE;
+
+bool do_homing = false;
+bool do_calibration = false;
 
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
@@ -136,7 +139,7 @@ void init_devices(void)
 
   delay(1000);
 
-  status_EEPROM = EEPROMload();
+  //status_EEPROM = EEPROMload();
 }
 
 /**
@@ -198,18 +201,40 @@ void run_motors(void)
   {
     case MOVE_IDLE_STATE:
       /* Motors are waiting */
+      if(do_homing == true)
+      {
+        move_state = MOVE_HOMING_STATE;
+      }
+      else if(do_calibration = true)
+      {
+        move_state = MOVE_CALIBRATION_STATE;  
+      }
+      else
+      {
+         move_state =  MOVE_IDLE_STATE;
+      }
       break;
 
     case MOVE_HOMING_STATE:
       /* Do the homing routine,
          check the end_sw_1 and end_sw_2 for end sw status
       */
+      if(homing_check(end_sw_1, end_sw_2, &stepper1, &stepper2) == true)
+      {
+        move_state = MOVE_IDLE_STATE;
+        do_homing = false;
+      }
+      else
+      {
+        move_state = MOVE_HOMING_STATE;
+      }
       break;
 
     case MOVE_CALIBRATION_STATE:
       /* Do the homing calibration,
          check the end_sw_1 and end_sw_2 for end sw status
       */
+      
       break;
 
     case MOVE_ERROR_STATE:
@@ -281,16 +306,16 @@ void communicate(void)
       message_free(&msg_send);
 
       /* Message generator */
-//      Serial.println("Generated message: ");
-//      message_init(&msg_send);
-//      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
+      Serial.println("Generated message: ");
+      message_init(&msg_send);
+      message_tlv_add_command(&msg_send, COMMAND_HOMING);
 //      position_test.x = 0;
 //      position_test.y = 50000;
 //      message_tlv_add_motor_position(&msg_send, &position_test);
-//      message_tlv_add_checksum(&msg_send);
-//      send_bytes(&msg_send);
-//      message_free(&msg_send);     
-//      Serial.println();
+      message_tlv_add_checksum(&msg_send);
+      send_bytes(&msg_send);
+      message_free(&msg_send);     
+      Serial.println();
       
       com_state = COM_END_STATE;
       break;
@@ -328,6 +353,9 @@ void communicate(void)
     case COM_HOMING_STATE:
       /* Debug the homming routine */
       Serial.println("homing");
+      stepper1.moveTo(-50000);
+      stepper2.moveTo(-50000);
+      do_homing = true;
 
       com_state = COM_END_STATE;
       break;

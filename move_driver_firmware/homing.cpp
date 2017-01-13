@@ -120,3 +120,19 @@ void Homing::process()
       }
   }
 }
+
+bool homing_check(bool end_sw_1, bool end_sw_2, AccelStepper *stepper_1, AccelStepper *stepper_2)
+{
+  if(end_sw_1 == true && end_sw_2 == true)
+  {
+     stepper_1->setCurrentPosition(-10000);
+     stepper_2->setCurrentPosition(-10000);
+     stepper_1->move(0);
+     stepper_2->move(0);
+     return true;
+  }
+  else
+  {
+    return false;
+  }
+}
