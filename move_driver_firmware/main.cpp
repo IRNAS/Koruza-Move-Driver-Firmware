@@ -285,7 +285,7 @@ void communicate(void)
 //      message_init(&msg_send);
 //      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
 //      position_test.x = 0;
-//      position_test.y = -1000000;
+//      position_test.y = 50000;
 //      message_tlv_add_motor_position(&msg_send, &position_test);
 //      message_tlv_add_checksum(&msg_send);
 //      send_bytes(&msg_send);
