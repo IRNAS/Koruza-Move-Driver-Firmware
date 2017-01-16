@@ -98,7 +98,7 @@ void Homing::process()
           m_stepper.setMaxSpeed(1000);
           m_stepper.setSpeed(100);
           m_stepper.setAcceleration(50);
-          m_stepper.moveTo(10000);
+          m_stepper.moveTo(0);
 
           break;
         }
@@ -118,19 +118,5 @@ void Homing::process()
       {
         break;
       }
-  }
-}
-
-bool homing_check(Switch *end_sw, AccelStepper *stepper)
-{
-  if((end_sw->get_button_state() == true) && (stepper->distanceToGo() < 0))
-  {
-    stepper->setCurrentPosition(-10000);
-    stepper->move(0);
-    return true;
-  }
-  else
-  {
-    return false;
   }
 }
