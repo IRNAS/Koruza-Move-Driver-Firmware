@@ -47,7 +47,7 @@ MotorMoveStatus MotorMove::currentStatus()
 
 void MotorMove::reset()
 {
-  Serial.println("MotorMove reset");
+  //Serial.println("MotorMove reset");
 
   m_stepper.setMaxSpeed(1000);
   m_stepper.setSpeed(100);
@@ -61,7 +61,7 @@ void MotorMove::reset()
 
 void MotorMove::move(long relative)
 {
-  Serial.println("MotorMove move");
+  //Serial.println("MotorMove move");
 
   switch (m_state)
   {
@@ -88,7 +88,7 @@ void MotorMove::move(long relative)
 
 void MotorMove::moveTo(long absolute)
 {
-  Serial.println("MotorMove moveTo");
+  //Serial.println("MotorMove moveTo");
 
   switch (m_state)
   {
@@ -115,7 +115,7 @@ void MotorMove::moveTo(long absolute)
 
 void MotorMove::process()
 {
-  Serial.println("MotorMove process");
+  //Serial.println("MotorMove process");
   switch (m_state)
   {
     case (MotorMoveState::STANDBY):

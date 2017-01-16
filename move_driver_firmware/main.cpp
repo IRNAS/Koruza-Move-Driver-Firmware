@@ -25,7 +25,7 @@ message_t msg_parsed;
 /* Sending frame size */
 //ssize_t send_frame_size;
 /* Sending message */
-message_t msg_send; 
+message_t msg_send;
 /* Command parsed form received message */
 tlv_command_t parsed_command;
 
@@ -152,43 +152,58 @@ void init_devices(void)
 void run_motors(void)
 {
   /* First block, always do this part
-     * move morors if nesseseru,
-     * check encoder error calculation
-     * update the end sw and encoder error status
+       move morors if nesseseru,
+       check encoder error calculation
+       update the end sw and encoder error status
   */
 
   //add here, encoder error calculation
 
+  //Serial.print("do_moving: "); Serial.println(do_moving);
+  //Serial.print("move_state: "); Serial.println(move_state);
+
   /* Motor move state mashine */
-  switch(move_state)
+  switch (move_state)
   {
     case MOVE_IDLE_STATE:
       /* Motors are waiting */
-      if(do_homing == true)
+      if (do_homing == true)
       {
         move_state = MOVE_HOMING_STATE;
       }
-      else if(do_calibration = true)
+      else if (do_calibration == true)
       {
-        move_state = MOVE_CALIBRATION_STATE;  
+        //Serial.println("set: MOVE_CALIBRATION_STATE");
+        move_state = MOVE_CALIBRATION_STATE;
       }
-      else if(do_moving == true)
+      else if (do_moving == true)
       {
         move_state = MOVE_MOVING_STATE;
       }
       else
       {
-         move_state =  MOVE_IDLE_STATE;
+        move_state =  MOVE_IDLE_STATE;
       }
       break;
 
     case MOVE_MOVING_STATE:
-		
-	  Serial.println("MOVE_MOVING_STATE");
+
+      //Serial.println("MOVE_MOVING_STATE");
       /* Do the moving routine */
       motor_move1.process();
       motor_move2.process();
-      if((motor_move2.currentState() == MotorMoveState::STANDBY))
+      
+      if (motor_move1.currentState() == MotorMoveState::STANDBY)
+      {
+        motor_move1.reset();
+      }
+
+      if (motor_move2.currentState() == MotorMoveState::STANDBY)
+      {
+        motor_move2.reset();
+      }
+
+      if ((motor_move1.currentState() == MotorMoveState::STANDBY) && (motor_move2.currentState() == MotorMoveState::STANDBY))
       {
         move_state = MOVE_IDLE_STATE;
         do_moving = false;
@@ -205,14 +220,14 @@ void run_motors(void)
       /* Do the homing routine,
          check the end_sw_1 and end_sw_2 for end sw status
       */
-     
+
       break;
 
     case MOVE_CALIBRATION_STATE:
       /* Do the homing calibration,
          check the end_sw_1 and end_sw_2 for end sw status
       */
-      
+
       break;
 
     case MOVE_ERROR_STATE:
@@ -231,10 +246,12 @@ void run_motors(void)
 */
 void communicate(void)
 {
-  switch(com_state)
+  //Serial.print("do_moving: "); Serial.println(do_moving);
+
+  switch (com_state)
   {
     case COM_IDLE_STATE:
-      if(command_received)
+      if (command_received)
       {
         com_state = COM_TLV_ACTIVE_STATE;
       }
@@ -246,19 +263,29 @@ void communicate(void)
 
     case COM_TLV_ACTIVE_STATE:
       frame_parser((uint8_t *)&rx_buffer, message_len, &msg_parsed);
-      
-      if(message_tlv_get_command(&msg_parsed, &parsed_command) != MESSAGE_SUCCESS)
+
+      if (message_tlv_get_command(&msg_parsed, &parsed_command) != MESSAGE_SUCCESS)
       {
         message_free(&msg_parsed);
         com_state = COM_ERROR_STATE;
       }
       else
       {
-        if(parsed_command == COMMAND_GET_STATUS){com_state = COM_GET_STATUS_STATE;}
-        else if(parsed_command == COMMAND_MOVE_MOTOR){com_state = COM_MOVE_MOTOR_STATE;}
-        else if(parsed_command == COMMAND_HOMING){com_state = COM_HOMING_STATE;}
-        else if(parsed_command == COMMAND_CALIBRATE_SENSORS){com_state = COM_CALIBRATION_STATE;}
-        else{com_state = COM_IDLE_STATE;}
+        if (parsed_command == COMMAND_GET_STATUS) {
+          com_state = COM_GET_STATUS_STATE;
+        }
+        else if (parsed_command == COMMAND_MOVE_MOTOR) {
+          com_state = COM_MOVE_MOTOR_STATE;
+        }
+        else if (parsed_command == COMMAND_HOMING) {
+          com_state = COM_HOMING_STATE;
+        }
+        else if (parsed_command == COMMAND_CALIBRATE_SENSORS) {
+          com_state = COM_CALIBRATION_STATE;
+        }
+        else {
+          com_state = COM_IDLE_STATE;
+        }
       }
       break;
 
@@ -268,37 +295,37 @@ void communicate(void)
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
       current_motor_position.x = stepper1.currentPosition();
       current_motor_position.y = stepper2.currentPosition();
-      
+
       /* Debug for new received motor position */
       Serial.print("currnet motor position: (");
       Serial.print(current_motor_position.x);
       Serial.print(", ");
       Serial.print(current_motor_position.y);
       Serial.println(")");
-        
+
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
       message_free(&msg_send);
 
       /* Message generator */
-//      Serial.println("Generated message: ");
-//      message_init(&msg_send);
-//      message_tlv_add_command(&msg_send, COMMAND_HOMING);
-//      position_test.x = 0;
-//      position_test.y = 50000;
-//      message_tlv_add_motor_position(&msg_send, &position_test);
-//      message_tlv_add_checksum(&msg_send);
-//      send_bytes(&msg_send);
-//      message_free(&msg_send);     
-//      Serial.println();
-      
+      //      Serial.println("Generated message: ");
+      //      message_init(&msg_send);
+      //      message_tlv_add_command(&msg_send, COMMAND_HOMING);
+      //      position_test.x = 0;
+      //      position_test.y = 50000;
+      //      message_tlv_add_motor_position(&msg_send, &position_test);
+      //      message_tlv_add_checksum(&msg_send);
+      //      send_bytes(&msg_send);
+      //      message_free(&msg_send);
+      //      Serial.println();
+
       com_state = COM_END_STATE;
       break;
 
     case COM_MOVE_MOTOR_STATE:
       /* Get new coordinates from received message */
-      if(message_tlv_get_motor_position(&msg_parsed, &new_motor_position) != MESSAGE_SUCCESS)
+      if (message_tlv_get_motor_position(&msg_parsed, &new_motor_position) != MESSAGE_SUCCESS)
       {
         message_free(&msg_parsed);
         com_state = COM_ERROR_STATE;
@@ -321,10 +348,10 @@ void communicate(void)
         /* Set new coordinates for motors */
         motor_move1.moveTo((long)new_motor_position.x);
         motor_move2.moveTo((long)new_motor_position.y);
-        
+
         /* Start moving in the move state mashine */
-        do_moving = true;  
-        
+        do_moving = true;
+
         com_state = COM_END_STATE;
       }
       break;
@@ -344,13 +371,13 @@ void communicate(void)
       break;
 
     case COM_ERROR_STATE:
-      
+
       com_state = COM_END_STATE;
       break;
     case COM_END_STATE:
       /* Free the received mesage form the memory */
       message_free(&msg_parsed);
-      
+
       command_received = false;
       com_state = COM_IDLE_STATE;
       break;
@@ -365,50 +392,50 @@ void receive_bytes(void)
   while (Serial.available()) {
     rx_data[0] = (uint8_t)Serial.read();
     /* Clear Rx_Buffer before receiving new data */
-    if (rx_indx==0){
-      for (int i=0; i<100; i++) rx_buffer[i]=0;
+    if (rx_indx == 0) {
+      for (int i = 0; i < 100; i++) rx_buffer[i] = 0;
     }
 
     /* Start byte received */
-    if(rx_data[0] == FRAME_MARKER_START){
+    if (rx_data[0] == FRAME_MARKER_START) {
       /* Start byte received in the frame */
-//      Serial.println("rx_last, rx_buff[0]:");
-//      Serial.println(rx_last[0], HEX);
-//      Serial.println(rx_buffer[0], HEX);
-      if((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)){
-        rx_buffer[rx_indx++]=rx_data[0];
+      //      Serial.println("rx_last, rx_buff[0]:");
+      //      Serial.println(rx_last[0], HEX);
+      //      Serial.println(rx_buffer[0], HEX);
+      if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
+        rx_buffer[rx_indx++] = rx_data[0];
       }
       /* Real start byte received */
-      else if(rx_last[0] != FRAME_MARKER_ESCAPE){
+      else if (rx_last[0] != FRAME_MARKER_ESCAPE) {
         rx_indx = 0;
-        rx_buffer[rx_indx++]=rx_data[0];
+        rx_buffer[rx_indx++] = rx_data[0];
 
       }
     }
     /* End byte received */
-    else if(rx_data[0] == FRAME_MARKER_END){
+    else if (rx_data[0] == FRAME_MARKER_END) {
       /* End byte received in the frame */
-      if(rx_last[0] == FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START){
-        rx_buffer[rx_indx++]=rx_data[0];
+      if (rx_last[0] == FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START) {
+        rx_buffer[rx_indx++] = rx_data[0];
       }
       /* Real end byte received */
-      else if(rx_last[0] != FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START){
-        rx_buffer[rx_indx++]=rx_data[0];
+      else if (rx_last[0] != FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START) {
+        rx_buffer[rx_indx++] = rx_data[0];
         message_len = rx_indx;
-        rx_indx=0;
+        rx_indx = 0;
         /* Transfer complete, data is ready to read */
         command_received = true;
         /* Disable USART1 interrupt */
         //HAL_NVIC_DisableIRQ(USART1_IRQn);
       }
     }
-    else{
-      if(rx_buffer[0] == FRAME_MARKER_START){
-        rx_buffer[rx_indx++]=rx_data[0];
+    else {
+      if (rx_buffer[0] == FRAME_MARKER_START) {
+        rx_buffer[rx_indx++] = rx_data[0];
       }
     }
     /* Store last received byte for ESC check */
     rx_last[0] = rx_data[0];
-    
+
   }
 }
