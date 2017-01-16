@@ -47,6 +47,8 @@ MotorMoveStatus MotorMove::currentStatus()
 
 void MotorMove::reset()
 {
+  Serial.println("MotorMove reset");
+
   m_stepper.setMaxSpeed(1000);
   m_stepper.setSpeed(100);
   m_stepper.setAcceleration(50);
@@ -59,12 +61,14 @@ void MotorMove::reset()
 
 void MotorMove::move(long relative)
 {
+  Serial.println("MotorMove move");
+
   switch (m_state)
   {
     case (MotorMoveState::STANDBY):
       {
-		m_stepper.move(relative);
-		m_stepper.enableOutputs();
+        m_stepper.move(relative);
+        m_stepper.enableOutputs();
         m_state = MotorMoveState::MOVING;
         break;
       }
@@ -84,12 +88,14 @@ void MotorMove::move(long relative)
 
 void MotorMove::moveTo(long absolute)
 {
+  Serial.println("MotorMove moveTo");
+
   switch (m_state)
   {
     case (MotorMoveState::STANDBY):
       {
-		m_stepper.moveTo(absolute);
-		m_stepper.enableOutputs();
+        m_stepper.moveTo(absolute);
+        m_stepper.enableOutputs();
         m_state = MotorMoveState::MOVING;
         break;
       }
@@ -109,6 +115,7 @@ void MotorMove::moveTo(long absolute)
 
 void MotorMove::process()
 {
+  Serial.println("MotorMove process");
   switch (m_state)
   {
     case (MotorMoveState::STANDBY):
@@ -119,9 +126,9 @@ void MotorMove::process()
       {
         if ((m_limit_switch.get_button_state() == true) && (m_stepper.distanceToGo() < 0))
         {
-		  m_stepper.disableOutputs();
+          m_stepper.disableOutputs();
           m_state = MotorMoveState::ERROR;
-		  m_status = MotorMoveStatus::LIMIT_SWITCH_PRESSED;
+          m_status = MotorMoveStatus::LIMIT_SWITCH_PRESSED;
           break;
         }
 

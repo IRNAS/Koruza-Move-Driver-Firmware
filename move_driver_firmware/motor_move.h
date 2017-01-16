@@ -35,7 +35,7 @@ class MotorMove
     void process();
     void reset();
     void move(long relative);
-	void moveTo(long absolute);
+    void moveTo(long absolute);
 };
 
 #endif

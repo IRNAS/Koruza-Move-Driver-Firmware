@@ -76,7 +76,7 @@ move_state_t move_state = MOVE_IDLE_STATE;
 
 bool do_homing = false;
 bool do_calibration = false;
-bool do moving = false;
+bool do_moving = false;
 
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
@@ -145,49 +145,17 @@ void init_devices(void)
   //status_EEPROM = EEPROMload();
 }
 
-/**
-   This function run motor
-*/
-static void runm(AccelStepper *stepper, Switch *sw)
-{
-
-  /* Check if end sw is reached */   
-  if(sw->get_button_state() == true)
-  {
-    /* Negative direction end */
-    if(stepper->targetPosition()<stepper->currentPosition())
-    {
-      stepper->stop();
-      stepper->moveTo(stepper->currentPosition());
-    }
-  }
-
-  /* Motor move
-     motor pins are enabled only while moving to conserve power
-  */
-  if(stepper->currentPosition()!=stepper->targetPosition()){
-    stepper->enableOutputs();
-    stepper->run();
-  }
-  else{
-    stepper->stop();
-    stepper->disableOutputs();
-  }
-}
 
 /**
    Handles the motor part of the firmware, movign, homing, calibration.
 */
 void run_motors(void)
 {
-
   /* First block, always do this part
      * move morors if nesseseru,
      * check encoder error calculation
      * update the end sw and encoder error status
   */
-//  runm(&stepper1, &limit_switch1); 
-//  runm(&stepper2, &limit_switch2);
 
   //add here, encoder error calculation
 
@@ -215,16 +183,19 @@ void run_motors(void)
       break;
 
     case MOVE_MOVING_STATE:
+		
+	  Serial.println("MOVE_MOVING_STATE");
       /* Do the moving routine */
       motor_move1.process();
       motor_move2.process();
-      if((motor_move1.currentState() == STANDBY) && (motor_move1.currentState() == STANDBY))
+      if((motor_move2.currentState() == MotorMoveState::STANDBY))
       {
         move_state = MOVE_IDLE_STATE;
         do_moving = false;
       }
       else
       {
+        do_moving = true;
         move_state = MOVE_MOVING_STATE;
       }
 
@@ -252,8 +223,6 @@ void run_motors(void)
       move_state = MOVE_IDLE_STATE;
       break;
   }
-  
-
 }
 
 /**
