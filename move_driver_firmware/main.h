@@ -13,6 +13,7 @@
 #include "calibration.h"
 #include "communication.h"
 #include "homing.h"
+#include "motor_move.h"
 
 typedef enum{
 	COM_IDLE_STATE = 0,
@@ -29,7 +30,8 @@ typedef enum{
 	MOVE_IDLE_STATE = 0,
 	MOVE_HOMING_STATE = 1,
 	MOVE_CALIBRATION_STATE = 2,
-	MOVE_ERROR_STATE = 3
+	MOVE_ERROR_STATE = 3,
+  MOVE_MOVING_STATE = 4
 } move_state_t;
 	
 

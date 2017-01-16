@@ -62,6 +62,8 @@ AccelStepper stepper2(AccelStepper::HALF4WIRE, stepper2_a_pin, stepper2_c_pin, s
 Calibration calibration1(limit_switch1, sensor1, stepper1);
 Calibration calibration2(limit_switch2, sensor2, stepper2);
 
+MotorMove motor_move1(limit_switch1, stepper1);
+MotorMove motor_move2(limit_switch2, stepper2);
 
 uint8_t status_sensor1;
 uint8_t status_sensor2;
@@ -74,6 +76,7 @@ move_state_t move_state = MOVE_IDLE_STATE;
 
 bool do_homing = false;
 bool do_calibration = false;
+bool do moving = false;
 
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
@@ -183,8 +186,8 @@ void run_motors(void)
      * check encoder error calculation
      * update the end sw and encoder error status
   */
-  runm(&stepper1, &limit_switch1); 
-  runm(&stepper2, &limit_switch2);
+//  runm(&stepper1, &limit_switch1); 
+//  runm(&stepper2, &limit_switch2);
 
   //add here, encoder error calculation
 
@@ -201,25 +204,37 @@ void run_motors(void)
       {
         move_state = MOVE_CALIBRATION_STATE;  
       }
+      else if(do_moving == true)
+      {
+        move_state = MOVE_MOVING_STATE;
+      }
       else
       {
          move_state =  MOVE_IDLE_STATE;
       }
       break;
 
+    case MOVE_MOVING_STATE:
+      /* Do the moving routine */
+      motor_move1.process();
+      motor_move2.process();
+      if((motor_move1.currentState() == STANDBY) && (motor_move1.currentState() == STANDBY))
+      {
+        move_state = MOVE_IDLE_STATE;
+        do_moving = false;
+      }
+      else
+      {
+        move_state = MOVE_MOVING_STATE;
+      }
+
+      break;
+
     case MOVE_HOMING_STATE:
       /* Do the homing routine,
          check the end_sw_1 and end_sw_2 for end sw status
       */
-      if(homing_check(&limit_switch1, &stepper1) && homing_check(&limit_switch2, &stepper2))
-      {
-        move_state = MOVE_IDLE_STATE;
-        do_homing = false;
-      }
-      else
-      {
-        move_state = MOVE_HOMING_STATE;
-      }
+     
       break;
 
     case MOVE_CALIBRATION_STATE:
@@ -298,16 +313,16 @@ void communicate(void)
       message_free(&msg_send);
 
       /* Message generator */
-      Serial.println("Generated message: ");
-      message_init(&msg_send);
-      message_tlv_add_command(&msg_send, COMMAND_HOMING);
+//      Serial.println("Generated message: ");
+//      message_init(&msg_send);
+//      message_tlv_add_command(&msg_send, COMMAND_HOMING);
 //      position_test.x = 0;
 //      position_test.y = 50000;
 //      message_tlv_add_motor_position(&msg_send, &position_test);
-      message_tlv_add_checksum(&msg_send);
-      send_bytes(&msg_send);
-      message_free(&msg_send);     
-      Serial.println();
+//      message_tlv_add_checksum(&msg_send);
+//      send_bytes(&msg_send);
+//      message_free(&msg_send);     
+//      Serial.println();
       
       com_state = COM_END_STATE;
       break;
@@ -335,8 +350,11 @@ void communicate(void)
         */
 
         /* Set new coordinates for motors */
-        stepper1.moveTo((long)new_motor_position.x);
-        stepper2.moveTo((long)new_motor_position.y);
+        motor_move1.moveTo((long)new_motor_position.x);
+        motor_move2.moveTo((long)new_motor_position.y);
+        
+        /* Start moving in the move state mashine */
+        do_moving = true;  
         
         com_state = COM_END_STATE;
       }
