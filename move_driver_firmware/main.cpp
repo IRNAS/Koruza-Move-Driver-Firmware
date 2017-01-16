@@ -65,6 +65,9 @@ Calibration calibration2(limit_switch2, sensor2, stepper2);
 MotorMove motor_move1(limit_switch1, stepper1);
 MotorMove motor_move2(limit_switch2, stepper2);
 
+Homing motor_homing1(limit_switch1, stepper1);
+Homing motor_homing2(limit_switch2, stepper2);
+
 uint8_t status_sensor1;
 uint8_t status_sensor2;
 bool status_EEPROM;
@@ -217,10 +220,31 @@ void run_motors(void)
       break;
 
     case MOVE_HOMING_STATE:
-      /* Do the homing routine,
-         check the end_sw_1 and end_sw_2 for end sw status
-      */
+      /* Do the homing routine */
+      motor_homing1.process();
+      motor_homing2.process();
 
+      if (motor_homing1.currentState() == HomingState::STANDBY)
+      {
+        motor_homing1.reset();  
+      }
+
+      if (motor_homing2.currentState() == HomingState::STANDBY)
+      {
+        motor_homing2.reset();  
+      }
+
+      if ((motor_homing1.currentState() == HomingState::STANDBY) && (motor_homing2.currentState() == HomingState::STANDBY))
+      {
+        move_state = MOVE_IDLE_STATE;
+        do_homing = false;  
+      }
+      else
+      {
+        do_moving = true;
+        move_state = MOVE_HOMING_STATE;  
+      }
+      
       break;
 
     case MOVE_CALIBRATION_STATE:
@@ -362,8 +386,12 @@ void communicate(void)
     case COM_HOMING_STATE:
       /* Debug the homming routine */
       Serial.println("homing");
-      stepper1.moveTo(-50000);
-      stepper2.moveTo(-50000);
+      motor_homing1.reset();
+      motor_homing2.reset();
+
+      motor_homing1.start();
+      motor_homing2.start();
+
       do_homing = true;
 
       com_state = COM_END_STATE;
