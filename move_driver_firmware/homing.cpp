@@ -47,10 +47,11 @@ HomingStatus Homing::currentStatus()
 
 void Homing::reset()
 {
+  //m_stepper.stop();
   m_stepper.setCurrentPosition(0);
   m_stepper.setMaxSpeed(1000);
   m_stepper.setSpeed(100);
-  m_stepper.setAcceleration(50);
+  m_stepper.setAcceleration(100);
   m_stepper.move(-1000000);
   m_stepper.enableOutputs();
 
@@ -94,10 +95,11 @@ void Homing::process()
       {
         if ((m_limit_switch.get_button_state() == true) && (m_stepper.distanceToGo() < 0))
         {
+          //m_stepper.stop();
           m_stepper.setCurrentPosition(-25000);
           m_stepper.setMaxSpeed(1000);
           m_stepper.setSpeed(100);
-          m_stepper.setAcceleration(50);
+          m_stepper.setAcceleration(100);
           m_stepper.moveTo(0);
 
           break;

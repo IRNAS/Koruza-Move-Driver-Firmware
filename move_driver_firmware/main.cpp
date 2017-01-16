@@ -368,7 +368,8 @@ void communicate(void)
             MOVE_HOMING_STATE = 2,
             MOVE_CALIBRATION_STATE = 3,
         */
-
+        motor_homing1.reset();
+        motor_homing2.reset();
         motor_move1.reset();
         motor_move2.reset();
         
@@ -388,6 +389,8 @@ void communicate(void)
       Serial.println("homing");
       motor_homing1.reset();
       motor_homing2.reset();
+      motor_move1.reset();
+      motor_move2.reset();
 
       motor_homing1.start();
       motor_homing2.start();
