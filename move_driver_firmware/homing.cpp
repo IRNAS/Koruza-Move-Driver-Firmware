@@ -98,7 +98,7 @@ void Homing::process()
           m_stepper.setMaxSpeed(1000);
           m_stepper.setSpeed(100);
           m_stepper.setAcceleration(50);
-          m_stepper.move(0);
+          m_stepper.moveTo(10000);
 
           break;
         }
