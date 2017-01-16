@@ -345,6 +345,9 @@ void communicate(void)
             MOVE_CALIBRATION_STATE = 3,
         */
 
+        motor_move1.reset();
+        motor_move2.reset();
+        
         /* Set new coordinates for motors */
         motor_move1.moveTo((long)new_motor_position.x);
         motor_move2.moveTo((long)new_motor_position.y);
