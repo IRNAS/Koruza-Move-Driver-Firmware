@@ -90,6 +90,7 @@ void MotorMove::move(long relative)
 void MotorMove::moveTo(long absolute)
 {
   //Serial.println("MotorMove moveTo");
+  //Serial.println(m_stepper.currentPosition());
 
   switch (m_state)
   {

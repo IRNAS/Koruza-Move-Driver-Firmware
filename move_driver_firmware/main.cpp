@@ -321,11 +321,11 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      Serial.print("currnet motor position: (");
-      Serial.print(current_motor_position.x);
-      Serial.print(", ");
-      Serial.print(current_motor_position.y);
-      Serial.println(")");
+//      Serial.print("currnet motor position: (");
+//      Serial.print(current_motor_position.x);
+//      Serial.print(", ");
+//      Serial.print(current_motor_position.y);
+//      Serial.println(")");
 
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
@@ -357,23 +357,23 @@ void communicate(void)
       else
       {
         /* Debug for new received motor position */
-        Serial.print("new motor position: (");
-        Serial.print(new_motor_position.x);
-        Serial.print(", ");
-        Serial.print(new_motor_position.y);
-        Serial.println(")");
+//        Serial.print("new motor position: (");
+//        Serial.print(new_motor_position.x);
+//        Serial.print(", ");
+//        Serial.print(new_motor_position.y);
+//        Serial.println(")");
 
         /* Set motor state mashine new state
             MOVE_RUN_STATE = 1,
             MOVE_HOMING_STATE = 2,
             MOVE_CALIBRATION_STATE = 3,
         */
-        motor_homing1.reset();
-        motor_homing2.reset();
+        
         motor_move1.reset();
         motor_move2.reset();
         
         /* Set new coordinates for motors */
+        // absolute move
         motor_move1.moveTo((long)new_motor_position.x);
         motor_move2.moveTo((long)new_motor_position.y);
 
