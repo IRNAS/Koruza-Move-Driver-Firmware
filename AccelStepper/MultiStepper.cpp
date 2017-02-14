@@ -1,7 +1,7 @@
 // MultiStepper.cpp
 //
 // Copyright (C) 2015 Mike McCauley
-// $Id: MultiStepper.cpp,v 1.2 2015/10/04 05:16:38 mikem Exp mikem $
+// $Id: MultiStepper.cpp,v 1.2 2015/10/04 05:16:38 mikem Exp $
 
 #include "MultiStepper.h"
 #include "AccelStepper.h"
@@ -16,6 +16,7 @@ boolean MultiStepper::addStepper(AccelStepper& stepper)
     if (_num_steppers >= MULTISTEPPER_MAX_STEPPERS)
 	return false; // No room for more
     _steppers[_num_steppers++] = &stepper;
+    return true;
 }
 
 void MultiStepper::moveTo(long absolute[])

@@ -368,12 +368,12 @@ void communicate(void)
             MOVE_HOMING_STATE = 2,
             MOVE_CALIBRATION_STATE = 3,
         */
-        motor_homing1.reset();
-        motor_homing2.reset();
+        
         motor_move1.reset();
         motor_move2.reset();
         
         /* Set new coordinates for motors */
+        // absolute move
         motor_move1.moveTo((long)new_motor_position.x);
         motor_move2.moveTo((long)new_motor_position.y);
 
