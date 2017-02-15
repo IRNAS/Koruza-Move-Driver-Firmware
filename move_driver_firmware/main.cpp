@@ -86,13 +86,18 @@ tlv_motor_position_t new_motor_position;
 
 tlv_motor_position_t position_test;
 
+//SendOnlySoftwareSerial //debugSerial(unused_gpio_pin);
+
 void init_mcu(void)
 {
   // begin serial communication
   Serial.begin(115200);
 
+  pinMode(unused_gpio_pin, OUTPUT);
+  //debugSerial.begin(115200);
+
   // initialize MCU pins
-  pinMode(unused_gpio_pin, INPUT);
+  //pinMode(unused_gpio_pin, INPUT);
   pinMode(sensor1_pwr_pin, OUTPUT);
   pinMode(sensor2_pwr_pin, OUTPUT);
   pinMode(i2c_sda, OUTPUT);
@@ -162,8 +167,8 @@ void run_motors(void)
 
   //add here, encoder error calculation
 
-  //Serial.print("do_moving: "); Serial.println(do_moving);
-  //Serial.print("move_state: "); Serial.println(move_state);
+  //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
+  //debugSerial.print("move_state: "); //debugSerial.println(move_state);
 
   /* Motor move state mashine */
   switch (move_state)
@@ -191,7 +196,7 @@ void run_motors(void)
 
     case MOVE_MOVING_STATE:
 
-      //Serial.println("MOVE_MOVING_STATE");
+      //debugSerial.println("MOVE_MOVING_STATE");
       /* Do the moving routine */
       motor_move1.process();
       motor_move2.process();
@@ -270,7 +275,7 @@ void run_motors(void)
 */
 void communicate(void)
 {
-  //Serial.print("do_moving: "); Serial.println(do_moving);
+  //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
 
   switch (com_state)
   {
@@ -321,11 +326,11 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-//      Serial.print("currnet motor position: (");
-//      Serial.print(current_motor_position.x);
-//      Serial.print(", ");
-//      Serial.print(current_motor_position.y);
-//      Serial.println(")");
+      //debugSerial.print("current motor position: (");
+      //debugSerial.print(current_motor_position.x);
+      //debugSerial.print(", ");
+      //debugSerial.print(current_motor_position.y);
+      //debugSerial.println(")");
 
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
@@ -357,11 +362,11 @@ void communicate(void)
       else
       {
         /* Debug for new received motor position */
-//        Serial.print("new motor position: (");
-//        Serial.print(new_motor_position.x);
-//        Serial.print(", ");
-//        Serial.print(new_motor_position.y);
-//        Serial.println(")");
+        //debugSerial.print("new motor position: (");
+        //debugSerial.print(new_motor_position.x);
+        //debugSerial.print(", ");
+        //debugSerial.print(new_motor_position.y);
+        //debugSerial.println(")");
 
         /* Set motor state mashine new state
             MOVE_RUN_STATE = 1,
@@ -386,7 +391,7 @@ void communicate(void)
 
     case COM_HOMING_STATE:
       /* Debug the homming routine */
-      Serial.println("homing");
+      //Serial.println("homing");
       motor_homing1.reset();
       motor_homing2.reset();
       motor_move1.reset();
@@ -423,6 +428,8 @@ void communicate(void)
 */
 void receive_bytes(void)
 {
+  //debugSerial.println("receiving bytes");
+  
   while (Serial.available()) {
     rx_data[0] = (uint8_t)Serial.read();
     /* Clear Rx_Buffer before receiving new data */
@@ -433,9 +440,9 @@ void receive_bytes(void)
     /* Start byte received */
     if (rx_data[0] == FRAME_MARKER_START) {
       /* Start byte received in the frame */
-      //      Serial.println("rx_last, rx_buff[0]:");
-      //      Serial.println(rx_last[0], HEX);
-      //      Serial.println(rx_buffer[0], HEX);
+      //      //debugSerial.println("rx_last, rx_buff[0]:");
+      //      //debugSerial.println(rx_last[0], HEX);
+      //      //debugSerial.println(rx_buffer[0], HEX);
       if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
         rx_buffer[rx_indx++] = rx_data[0];
       }
