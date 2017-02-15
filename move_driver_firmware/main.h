@@ -15,6 +15,8 @@
 #include "homing.h"
 #include "motor_move.h"
 
+#include "SendOnlySoftwareSerial.h"
+
 typedef enum{
 	COM_IDLE_STATE = 0,
 	COM_TLV_ACTIVE_STATE = 1,
