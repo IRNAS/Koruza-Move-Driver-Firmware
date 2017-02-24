@@ -50,9 +50,9 @@ void MotorMove::reset()
   //Serial.println("MotorMove reset");
 
   //m_stepper.stop();
-  m_stepper.setMaxSpeed(10000);
-  m_stepper.setSpeed(5000);
-  m_stepper.setAcceleration(5000);
+  m_stepper.setMaxSpeed(2000);
+  m_stepper.setSpeed(500);
+  m_stepper.setAcceleration(500);
   m_stepper.disableOutputs();
 
   m_state = MotorMoveState::STANDBY;

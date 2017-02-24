@@ -136,16 +136,16 @@ void init_devices(void)
 
   // initialize stepper motor 1
   stepper1.setCurrentPosition(0);
-  stepper1.setMaxSpeed(10000);
-  stepper1.setSpeed(5000);
-  stepper1.setAcceleration(5000);
+  stepper1.setMaxSpeed(2000);
+  stepper1.setSpeed(500);
+  stepper1.setAcceleration(500);
   stepper1.disableOutputs();
 
   // initialize stepper motor 2
   stepper2.setCurrentPosition(0);
-  stepper2.setMaxSpeed(10000);
-  stepper2.setSpeed(5000);
-  stepper2.setAcceleration(5000);
+  stepper2.setMaxSpeed(2000);
+  stepper2.setSpeed(500);
+  stepper2.setAcceleration(500);
   stepper2.disableOutputs();
 
   delay(1000);
