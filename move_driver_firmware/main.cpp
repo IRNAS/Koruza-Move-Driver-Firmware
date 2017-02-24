@@ -313,7 +313,7 @@ void communicate(void)
           com_state = COM_CALIBRATION_STATE;
         }
         else {
-          com_state = COM_IDLE_STATE;
+          com_state = COM_END_STATE;
         }
       }
       break;
