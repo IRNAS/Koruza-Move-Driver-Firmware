@@ -86,7 +86,7 @@ tlv_motor_position_t new_motor_position;
 
 tlv_motor_position_t position_test;
 
-//SendOnlySoftwareSerial //debugSerial(unused_gpio_pin);
+//SendOnlySoftwareSerial debugSerial(unused_gpio_pin);
 
 void init_mcu(void)
 {
