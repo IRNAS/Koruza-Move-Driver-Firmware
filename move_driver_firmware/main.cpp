@@ -153,6 +153,36 @@ void init_devices(void)
   //status_EEPROM = EEPROMload();
 }
 
+/**
+   This function run motor
+*/
+static void runm(AccelStepper *stepper, Switch *sw)
+{
+
+  /* Check if end sw is reached */   
+  if(sw->get_button_state() == true)
+  {
+    /* Negative direction end */
+    if(stepper->targetPosition()<stepper->currentPosition())
+    {
+      stepper->stop();
+      stepper->moveTo(stepper->currentPosition());
+    }
+  }
+
+  /* Motor move
+     motor pins are enabled only while moving to conserve power
+  */
+  if(stepper->currentPosition()!=stepper->targetPosition()){
+    stepper->enableOutputs();
+    stepper->run();
+  }
+  else{
+    stepper->stop();
+    stepper->disableOutputs();
+  }
+}
+
 
 /**
    Handles the motor part of the firmware, movign, homing, calibration.
@@ -164,109 +194,21 @@ void run_motors(void)
        check encoder error calculation
        update the end sw and encoder error status
   */
+  runm(&stepper1, &limit_switch1); 
+  runm(&stepper2, &limit_switch2);
 
+  if(do_homing = true){
+      
+  }
+  else{
+    
+  }
   //add here, encoder error calculation
 
   //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
   //debugSerial.print("move_state: "); //debugSerial.println(move_state);
 
-  /* Motor move state mashine */
-  switch (move_state)
-  {
-    case MOVE_IDLE_STATE:
-      /* Motors are waiting */
-      if (do_homing == true)
-      {
-        move_state = MOVE_HOMING_STATE;
-      }
-      else if (do_calibration == true)
-      {
-        //Serial.println("set: MOVE_CALIBRATION_STATE");
-        move_state = MOVE_CALIBRATION_STATE;
-      }
-      else if (do_moving == true)
-      {
-        move_state = MOVE_MOVING_STATE;
-      }
-      else
-      {
-        move_state =  MOVE_IDLE_STATE;
-      }
-      break;
 
-    case MOVE_MOVING_STATE:
-
-      //debugSerial.println("MOVE_MOVING_STATE");
-      /* Do the moving routine */
-      motor_move1.process();
-      motor_move2.process();
-      
-      if (motor_move1.currentState() == MotorMoveState::STANDBY)
-      {
-        motor_move1.reset();
-      }
-
-      if (motor_move2.currentState() == MotorMoveState::STANDBY)
-      {
-        motor_move2.reset();
-      }
-
-      if ((motor_move1.currentState() == MotorMoveState::STANDBY) && (motor_move2.currentState() == MotorMoveState::STANDBY))
-      {
-        move_state = MOVE_IDLE_STATE;
-        do_moving = false;
-      }
-      else
-      {
-        do_moving = true;
-        move_state = MOVE_MOVING_STATE;
-      }
-
-      break;
-
-    case MOVE_HOMING_STATE:
-      /* Do the homing routine */
-      motor_homing1.process();
-      motor_homing2.process();
-
-      if (motor_homing1.currentState() == HomingState::STANDBY)
-      {
-        motor_homing1.reset();  
-      }
-
-      if (motor_homing2.currentState() == HomingState::STANDBY)
-      {
-        motor_homing2.reset();  
-      }
-
-      if ((motor_homing1.currentState() == HomingState::STANDBY) && (motor_homing2.currentState() == HomingState::STANDBY))
-      {
-        move_state = MOVE_IDLE_STATE;
-        do_homing = false;  
-      }
-      else
-      {
-        do_moving = true;
-        move_state = MOVE_HOMING_STATE;  
-      }
-      
-      break;
-
-    case MOVE_CALIBRATION_STATE:
-      /* Do the homing calibration,
-         check the end_sw_1 and end_sw_2 for end sw status
-      */
-
-      break;
-
-    case MOVE_ERROR_STATE:
-
-      break;
-
-    default:
-      move_state = MOVE_IDLE_STATE;
-      break;
-  }
 }
 
 /**
@@ -326,11 +268,11 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      //debugSerial.print("current motor position: (");
-      //debugSerial.print(current_motor_position.x);
-      //debugSerial.print(", ");
-      //debugSerial.print(current_motor_position.y);
-      //debugSerial.println(")");
+      Serial.print("motor position: (");
+      Serial.print(current_motor_position.x);
+      Serial.print(", ");
+      Serial.print(current_motor_position.y);
+      Serial.println(")");
 
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
@@ -374,16 +316,16 @@ void communicate(void)
             MOVE_CALIBRATION_STATE = 3,
         */
         
-        motor_move1.reset();
-        motor_move2.reset();
         
         /* Set new coordinates for motors */
         // absolute move
-        motor_move1.moveTo((long)new_motor_position.x);
-        motor_move2.moveTo((long)new_motor_position.y);
+        stepper1.moveTo((long)new_motor_position.x);
+        stepper2.moveTo((long)new_motor_position.y);
 
-        /* Start moving in the move state mashine */
-        do_moving = true;
+        /* if command to move motors is send during homing,
+           motors will go to new position and stop homing routine
+        */
+        do_homing = false;
 
         com_state = COM_END_STATE;
       }
@@ -392,15 +334,10 @@ void communicate(void)
     case COM_HOMING_STATE:
       /* Debug the homming routine */
       //Serial.println("homing");
-      motor_homing1.reset();
-      motor_homing2.reset();
-      motor_move1.reset();
-      motor_move2.reset();
-
-      motor_homing1.start();
-      motor_homing2.start();
-
+      stepper1.moveTo(-1000000);
+      stepper2.moveTo(-1000000);
       do_homing = true;
+
 
       com_state = COM_END_STATE;
       break;
