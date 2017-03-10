@@ -188,9 +188,9 @@ static bool homem(AccelStepper *stepper, Switch *sw){
   {
     //m_stepper.stop();
     stepper->setCurrentPosition(-25000);
-    stepper->setMaxSpeed(1000);
-    stepper->setSpeed(100);
-    stepper->setAcceleration(100);
+    stepper->setMaxSpeed(2000);
+    stepper->setSpeed(500);
+    stepper->setAcceleration(500);
     stepper->moveTo(0);
     return true;
   }
