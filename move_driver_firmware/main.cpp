@@ -183,30 +183,45 @@ static void runm(AccelStepper *stepper, Switch *sw)
   }
 }
 
+static bool homem(AccelStepper *stepper, Switch *sw){
+  if ((sw->get_button_state() == true) && (stepper->distanceToGo() < 0))
+  {
+    //m_stepper.stop();
+    stepper->setCurrentPosition(-25000);
+    stepper->setMaxSpeed(1000);
+    stepper->setSpeed(100);
+    stepper->setAcceleration(100);
+    stepper->moveTo(0);
+    return true;
+  }
+  else{
+    return false;  
+  }
+}
 
 /**
    Handles the motor part of the firmware, movign, homing, calibration.
 */
 void run_motors(void)
 {
+  bool home_m1 = false;
+  bool home_m2 = false;
   /* First block, always do this part
        move morors if nesseseru,
        check encoder error calculation
        update the end sw and encoder error status
   */
+
+
+  if(do_homing == true){
+    home_m1 = homem(&stepper1, &limit_switch1);
+    home_m2 = homem(&stepper2, &limit_switch2);
+  }
+
+
   runm(&stepper1, &limit_switch1); 
   runm(&stepper2, &limit_switch2);
 
-  if(do_homing = true){
-      
-  }
-  else{
-    
-  }
-  //add here, encoder error calculation
-
-  //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
-  //debugSerial.print("move_state: "); //debugSerial.println(move_state);
 
 
 }
@@ -268,12 +283,12 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      Serial.print("motor position: (");
-      Serial.print(current_motor_position.x);
-      Serial.print(", ");
-      Serial.print(current_motor_position.y);
-      Serial.println(")");
-
+//      Serial.print("motor position: (");
+//      Serial.print(current_motor_position.x);
+//      Serial.print(", ");
+//      Serial.print(current_motor_position.y);
+//      Serial.print(")");
+//      Serial.println(do_homing);
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
@@ -304,7 +319,7 @@ void communicate(void)
       else
       {
         /* Debug for new received motor position */
-        //debugSerial.print("new motor position: (");
+//        Serial.println("new position: (");
         //debugSerial.print(new_motor_position.x);
         //debugSerial.print(", ");
         //debugSerial.print(new_motor_position.y);
@@ -316,7 +331,7 @@ void communicate(void)
             MOVE_CALIBRATION_STATE = 3,
         */
         
-        
+        do_homing = false;
         /* Set new coordinates for motors */
         // absolute move
         stepper1.moveTo((long)new_motor_position.x);
@@ -325,7 +340,7 @@ void communicate(void)
         /* if command to move motors is send during homing,
            motors will go to new position and stop homing routine
         */
-        do_homing = false;
+
 
         com_state = COM_END_STATE;
       }
