@@ -136,14 +136,14 @@ void init_devices(void)
 
   // initialize stepper motor 1
   stepper1.setCurrentPosition(0);
-  stepper1.setMaxSpeed(2000);
+  stepper1.setMaxSpeed(1000);
   stepper1.setSpeed(500);
   stepper1.setAcceleration(500);
   stepper1.disableOutputs();
 
   // initialize stepper motor 2
   stepper2.setCurrentPosition(0);
-  stepper2.setMaxSpeed(2000);
+  stepper2.setMaxSpeed(1000);
   stepper2.setSpeed(500);
   stepper2.setAcceleration(500);
   stepper2.disableOutputs();
@@ -188,7 +188,7 @@ static bool homem(AccelStepper *stepper, Switch *sw){
   {
     //m_stepper.stop();
     stepper->setCurrentPosition(-25000);
-    stepper->setMaxSpeed(2000);
+    stepper->setMaxSpeed(1000);
     stepper->setSpeed(500);
     stepper->setAcceleration(500);
     stepper->moveTo(0);
