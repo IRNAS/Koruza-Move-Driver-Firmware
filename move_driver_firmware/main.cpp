@@ -166,7 +166,7 @@ static void runm(AccelStepper *stepper, Switch *sw)
     if(stepper->targetPosition()<stepper->currentPosition())
     {
       stepper->stop();
-      stepper->moveTo(stepper->currentPosition());
+      stepper->setCurrentPosition(stepper->currentPosition());//moveTo(stepper->currentPosition());
     }
   }
 
