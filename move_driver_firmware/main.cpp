@@ -29,8 +29,8 @@ message_t msg_send;
 /* Command parsed form received message */
 tlv_command_t parsed_command;
 
-const int limit_switch1_pin = 4;
-const int limit_switch2_pin = 3;
+const int limit_switch1_pin = 3;
+const int limit_switch2_pin = 4;
 const unsigned long switch_debounce_delay = 50; //ms
 
 Switch limit_switch1(limit_switch1_pin, LOW, false, switch_debounce_delay);
