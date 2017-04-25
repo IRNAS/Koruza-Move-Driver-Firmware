@@ -45,15 +45,15 @@ const int sensor1_pwr_pin = A2;
 const int sensor2_pwr_pin = A3;
 const int i2c_sda = A4;
 
-const int stepper1_a_pin = 5;
-const int stepper1_b_pin = 6;
-const int stepper1_c_pin = 7;
-const int stepper1_d_pin = 8;
+const int stepper1_a_pin = 10;
+const int stepper1_b_pin = 9;
+const int stepper1_c_pin = A0;
+const int stepper1_d_pin = A1;
 
-const int stepper2_a_pin = 10;
-const int stepper2_b_pin = 9;
-const int stepper2_c_pin = A0;
-const int stepper2_d_pin = A1;
+const int stepper2_a_pin = 5;
+const int stepper2_b_pin = 6;
+const int stepper2_c_pin = 7;
+const int stepper2_d_pin = 8;
 
 AccelStepper stepper1(AccelStepper::HALF4WIRE, stepper1_a_pin, stepper1_c_pin, stepper1_b_pin, stepper1_d_pin, false);
 AccelStepper stepper2(AccelStepper::HALF4WIRE, stepper2_a_pin, stepper2_c_pin, stepper2_b_pin, stepper2_d_pin, false);
