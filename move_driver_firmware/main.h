@@ -17,6 +17,8 @@
 
 #include "SendOnlySoftwareSerial.h"
 
+#define MOTOR_POSITION_UNDEFINED 0x80000000
+
 typedef enum{
 	COM_IDLE_STATE = 0,
 	COM_TLV_ACTIVE_STATE = 1,

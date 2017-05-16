@@ -92,7 +92,7 @@ void init_mcu(void)
 {
   // begin serial communication
   Serial.begin(115200);
-
+  //Serial.println("Start");
   pinMode(unused_gpio_pin, OUTPUT);
   //debugSerial.begin(115200);
 
@@ -295,16 +295,16 @@ void communicate(void)
       message_free(&msg_send);
 
       /* Message generator */
-      //      Serial.println("Generated message: ");
-      //      message_init(&msg_send);
-      //      message_tlv_add_command(&msg_send, COMMAND_HOMING);
-      //      position_test.x = 0;
-      //      position_test.y = 50000;
-      //      message_tlv_add_motor_position(&msg_send, &position_test);
-      //      message_tlv_add_checksum(&msg_send);
-      //      send_bytes(&msg_send);
-      //      message_free(&msg_send);
-      //      Serial.println();
+//      Serial.println("Generated message: ");
+//      message_init(&msg_send);
+//      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
+//      position_test.x = 2000;
+//      position_test.y = -2147483648;
+//      message_tlv_add_motor_position(&msg_send, &position_test);
+//      message_tlv_add_checksum(&msg_send);
+//      send_bytes(&msg_send);
+//      message_free(&msg_send);
+//      Serial.println();
 
       com_state = COM_END_STATE;
       break;
@@ -319,11 +319,11 @@ void communicate(void)
       else
       {
         /* Debug for new received motor position */
-//        Serial.println("new position: (");
-        //debugSerial.print(new_motor_position.x);
-        //debugSerial.print(", ");
-        //debugSerial.print(new_motor_position.y);
-        //debugSerial.println(")");
+//        Serial.print("new position: (");
+//        Serial.print(new_motor_position.x);
+//        Serial.print(", ");
+//        Serial.print(new_motor_position.y);
+//        Serial.println(")");
 
         /* Set motor state mashine new state
             MOVE_RUN_STATE = 1,
@@ -334,9 +334,12 @@ void communicate(void)
         do_homing = false;
         /* Set new coordinates for motors */
         // absolute move
-        stepper1.moveTo((long)new_motor_position.x);
-        stepper2.moveTo((long)new_motor_position.y);
-
+    		if(new_motor_position.x != MOTOR_POSITION_UNDEFINED){
+    			stepper1.moveTo((long)new_motor_position.x);
+    		}
+    		if(new_motor_position.y != MOTOR_POSITION_UNDEFINED){
+    			stepper2.moveTo((long)new_motor_position.y);
+    		}
         /* if command to move motors is send during homing,
            motors will go to new position and stop homing routine
         */
