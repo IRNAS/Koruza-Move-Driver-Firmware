@@ -21,7 +21,7 @@ install:
   
   
 script:
-  - arduino --verify --board arduino:avr:pro $PWD/move_driver_firmware/move_driver_firmware.ino
+  - arduino --verify --board arduino:avr:uno $PWD/move_driver_firmware/move_driver_firmware.ino
 
 notifications:
   email:
