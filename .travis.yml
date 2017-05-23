@@ -4,28 +4,28 @@ before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
   - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
-  - tar xf arduino-1.6.5-linux64.tar.xz
-  - sudo mv arduino-1.6.5 /usr/local/share/arduino
+  - wget http://downloads.arduino.cc/arduino-1.6.9-linux64.tar.xz
+  - tar xf arduino-1.6.9-linux64.tar.xz
+  - sudo mv arduino-1.6.9 /usr/local/share/arduino
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
   
 install:
   # install wire lib
   #- arduino --install-library "Wire"
   # install AccelStepper lib
-  - ln -s $PWD/AccelStepper $HOME/arduino/libraries/AccelStepper
+  - ln -s $PWD/AccelStepper /usr/local/share/arduino/libraries/AccelStepper
   # install SendOnlySoftwareSerial lib
-  - ln -s $PWD/SendOnlySoftwareSerial $HOME/arduino/libraries/SendOnlySoftwareSerial
+  - ln -s $PWD/SendOnlySoftwareSerial /usr/local/share/arduino/libraries/SendOnlySoftwareSerial
   # install IRNAS/Arduino-Switch-Debounce
-  - git clone https://github.com/IRNAS/Arduino-Switch-Debounce $HOME/arduino/libraries/Arduino-Switch-Debounce
-  - cp -avr $HOME/Arduino/libraries/Arduino-Switch-Debounce/Switch $HOME/arduino/libraries/Switch
-  - ls -l $HOME/arduino/libraries/Switch
+  - git clone https://github.com/IRNAS/Arduino-Switch-Debounce /usr/local/share/arduino/libraries/Arduino-Switch-Debounce
+  - cp -avr /usr/local/share/Arduino/libraries/Arduino-Switch-Debounce/Switch /usr/local/share/arduino/libraries/Switch
+  - ls -l /usr/local/share/arduino/libraries/Switch
   #- ln -s /usr/local/share/arduino/libraries/Arduino-Switch-Debounce/Switch /usr/local/share/arduino/libraries/Switch
   # install IRNAS/Arduino-Switch-Debounce
   - git clone https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library
   - ln -s /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library/TLV493D /usr/local/share/arduino/libraries/TLV493D
   
-  - ls -l $HOME/arduino/libraries/
+  - ls -l /usr/local/share/arduino/libraries/
   
 script:
   - arduino --verify --board arduino:avr:mini:cpu=atmega328 $PWD/move_driver_firmware/move_driver_firmware.ino
