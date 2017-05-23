@@ -19,6 +19,7 @@ install:
   # install IRNAS/Arduino-Switch-Debounce
   - git clone https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library
   
+  - ls -l /usr/local/share/arduino/libraries
   
 script:
   - arduino --verify --board arduino:avr:uno $PWD/move_driver_firmware/move_driver_firmware.ino
