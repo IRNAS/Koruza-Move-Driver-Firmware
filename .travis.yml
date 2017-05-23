@@ -1,0 +1,29 @@
+language: c
+
+before_install:
+  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
+  - sleep 3
+  - export DISPLAY=:1.0
+  - wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
+  - tar xf arduino-1.6.5-linux64.tar.xz
+  - sudo mv arduino-1.6.5 /usr/local/share/arduino
+  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+  
+install:
+  # install AccelStepper lib
+  - ln -s $PWD/AccelStepper /usr/local/share/arduino/libraries/AccelStepper
+  # install SendOnlySoftwareSerial lib
+  - ln -s $PWD/SendOnlySoftwareSerial /usr/local/share/arduino/libraries/SendOnlySoftwareSerial
+  # install IRNAS/Arduino-Switch-Debounce
+  - git clone https://github.com/IRNAS/Arduino-Switch-Debounce /usr/local/share/arduino/libraries/Arduino-Switch-Debounce
+  # install IRNAS/Arduino-Switch-Debounce
+  - git clone https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library
+  
+  
+script:
+  - arduino --verify --board arduino:avr:pro $PWD/move_driver_firmware/move_driver_firmware.ino
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
