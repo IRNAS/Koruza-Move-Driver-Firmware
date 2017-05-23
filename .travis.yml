@@ -28,7 +28,7 @@ install:
   - ls -l /usr/local/share/arduino/libraries
   
 script:
-  - arduino --verify --board arduino:avr:pro:cpu=atmega328 $PWD/move_driver_firmware/move_driver_firmware.ino
+  - arduino --verify --board arduino:avr:mini:cpu=atmega328 $PWD/move_driver_firmware/move_driver_firmware.ino
 
 notifications:
   email:
