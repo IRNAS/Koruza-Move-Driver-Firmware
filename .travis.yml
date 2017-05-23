@@ -13,19 +13,19 @@ install:
   # install wire lib
   #- arduino --install-library "Wire"
   # install AccelStepper lib
-  - ln -s $PWD/AccelStepper $HOME/Arduino/libraries/AccelStepper
+  - ln -s $PWD/AccelStepper $HOME/arduino/libraries/AccelStepper
   # install SendOnlySoftwareSerial lib
-  - ln -s $PWD/SendOnlySoftwareSerial $HOME/Arduino/libraries/SendOnlySoftwareSerial
+  - ln -s $PWD/SendOnlySoftwareSerial $HOME/arduino/libraries/SendOnlySoftwareSerial
   # install IRNAS/Arduino-Switch-Debounce
-  - git clone https://github.com/IRNAS/Arduino-Switch-Debounce $HOME/Arduino/libraries/Arduino-Switch-Debounce
-  - cp -avr $HOME/Arduino/libraries/Arduino-Switch-Debounce/Switch $HOME/Arduino/libraries/Switch
-  - ls -l $HOME/Arduino/libraries/Switch
+  - git clone https://github.com/IRNAS/Arduino-Switch-Debounce $HOME/arduino/libraries/Arduino-Switch-Debounce
+  - cp -avr $HOME/Arduino/libraries/Arduino-Switch-Debounce/Switch $HOME/arduino/libraries/Switch
+  - ls -l $HOME/arduino/libraries/Switch
   #- ln -s /usr/local/share/arduino/libraries/Arduino-Switch-Debounce/Switch /usr/local/share/arduino/libraries/Switch
   # install IRNAS/Arduino-Switch-Debounce
   - git clone https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library
   - ln -s /usr/local/share/arduino/libraries/TLV493D-3D-Magnetic-Sensor-Arduino-Library/TLV493D /usr/local/share/arduino/libraries/TLV493D
   
-  - ls -l $HOME/Arduino/libraries/
+  - ls -l $HOME/arduino/libraries/
   
 script:
   - arduino --verify --board arduino:avr:mini:cpu=atmega328 $PWD/move_driver_firmware/move_driver_firmware.ino
