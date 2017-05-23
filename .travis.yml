@@ -10,6 +10,8 @@ before_install:
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
   
 install:
+  # install wire lib
+  - arduino --install-library "Wire"
   # install AccelStepper lib
   - ln -s $PWD/AccelStepper /usr/local/share/arduino/libraries/AccelStepper
   # install SendOnlySoftwareSerial lib
