@@ -156,9 +156,9 @@ void init_devices(void)
 /**
    This function run motor
 */
-static void runm(AccelStepper *stepper, Switch *sw)
+static bool runm(AccelStepper *stepper, Switch *sw)
 {
-
+  bool sw_end = false;
   /* Check if end sw is reached */   
   if(sw->get_button_state() == true)
   {
@@ -167,6 +167,7 @@ static void runm(AccelStepper *stepper, Switch *sw)
     {
       stepper->stop();
       stepper->setCurrentPosition(stepper->currentPosition());//moveTo(stepper->currentPosition());
+      sw_end = true;
     }
   }
 
@@ -181,25 +182,17 @@ static void runm(AccelStepper *stepper, Switch *sw)
     stepper->stop();
     stepper->disableOutputs();
   }
+  return sw_end;
 }
 
-static bool homem(AccelStepper *stepper, Switch *sw, int num){
+static bool homem(AccelStepper *stepper, Switch *sw){
   
-  if ((sw->get_button_state() == true) && (stepper->distanceToGo() < 0))
-  {
-    //m_stepper.stop();
-    Serial.print("hom:");
-    Serial.println(num);
     stepper->setCurrentPosition(-25000);
     stepper->setMaxSpeed(1000);
     stepper->setSpeed(500);
     stepper->setAcceleration(500);
     stepper->moveTo(0);
     return true;
-  }
-  else{
-    return false;  
-  }
 }
 
 /**
@@ -207,23 +200,27 @@ static bool homem(AccelStepper *stepper, Switch *sw, int num){
 */
 void run_motors(void)
 {
-  //bool home_m1 = false;
-  //bool home_m2 = false;
+  bool home_m1 = false;
+  bool home_m2 = false;
   /* First block, always do this part
        move morors if nesseseru,
        check encoder error calculation
        update the end sw and encoder error status
   */
 
+  home_m1 = runm(&stepper1, &limit_switch1); 
+  home_m2 = runm(&stepper2, &limit_switch2);
 
 
   if(do_homing == true){
-    homem(&stepper1, &limit_switch1, 1);
-    homem(&stepper2, &limit_switch2, 2);
+    if(home_m1 == true){
+      homem(&stepper1, &limit_switch1);
+    }
+    if(home_m2 == true){
+      homem(&stepper2, &limit_switch2);
+    }
   }
 
-  runm(&stepper1, &limit_switch1); 
-  runm(&stepper2, &limit_switch2);
 
 
 }
