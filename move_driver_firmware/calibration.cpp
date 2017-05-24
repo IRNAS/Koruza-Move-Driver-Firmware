@@ -1,7 +1,3 @@
-#include "switch.h" // https://github.com/IRNAS/Arduino-Switch-Debounce
-#include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
-#include "AccelStepper.h" // http://www.airspayce.com/mikem/arduino/AccelStepper/
-#include "Wire.h"
 #include "calibration.h"
 #include <math.h>
 

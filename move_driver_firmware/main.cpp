@@ -183,10 +183,13 @@ static void runm(AccelStepper *stepper, Switch *sw)
   }
 }
 
-static bool homem(AccelStepper *stepper, Switch *sw){
+static bool homem(AccelStepper *stepper, Switch *sw, int num){
+  
   if ((sw->get_button_state() == true) && (stepper->distanceToGo() < 0))
   {
     //m_stepper.stop();
+    Serial.print("hom:");
+    Serial.println(num);
     stepper->setCurrentPosition(-25000);
     stepper->setMaxSpeed(1000);
     stepper->setSpeed(500);
@@ -204,8 +207,8 @@ static bool homem(AccelStepper *stepper, Switch *sw){
 */
 void run_motors(void)
 {
-  bool home_m1 = false;
-  bool home_m2 = false;
+  //bool home_m1 = false;
+  //bool home_m2 = false;
   /* First block, always do this part
        move morors if nesseseru,
        check encoder error calculation
@@ -213,15 +216,14 @@ void run_motors(void)
   */
 
 
-  if(do_homing == true){
-    home_m1 = homem(&stepper1, &limit_switch1);
-    home_m2 = homem(&stepper2, &limit_switch2);
-  }
 
+  if(do_homing == true){
+    homem(&stepper1, &limit_switch1, 1);
+    homem(&stepper2, &limit_switch2, 2);
+  }
 
   runm(&stepper1, &limit_switch1); 
   runm(&stepper2, &limit_switch2);
-
 
 
 }
@@ -283,12 +285,26 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-//      Serial.print("motor position: (");
-//      Serial.print(current_motor_position.x);
-//      Serial.print(", ");
-//      Serial.print(current_motor_position.y);
-//      Serial.print(")");
-//      Serial.println(do_homing);
+      Serial.print("motor position: (");
+      Serial.print(current_motor_position.x);
+      Serial.print(", ");
+      Serial.print(current_motor_position.y);
+      Serial.print(")");
+      Serial.println(do_homing);
+      /*homing debug*/
+      Serial.print("hinf ");
+      Serial.print("X");
+      Serial.print(": ");
+      Serial.print(limit_switch1.get_button_state());
+      Serial.print(" ,");
+      Serial.print(stepper2.distanceToGo());
+      Serial.print(";  ");
+      Serial.print("Y");
+      Serial.print(": ");
+      Serial.print(limit_switch2.get_button_state());
+      Serial.print(" ,");
+      Serial.println(stepper1.distanceToGo());
+      
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
