@@ -1,5 +1,4 @@
-# Koruza-Move-Driver-Firmware
-
+# Koruza-Move-Driver-Firmware [![Build Status](https://travis-ci.org/IRNAS/Koruza-Move-Driver-Firmware.svg?branch=dev_motor_homing_test)](https://travis-ci.org/IRNAS/Koruza-Move-Driver-Firmware)
 This repository contains firmware for Koruza 2.0 move driver. Koruza move driver is a small Atmel ATmega328p board with magnetic encoder sensors, end buttons, and unipolar stepper drivers. All necessary hardware details and specs are in the repository [Koruza move driver](link1).
 
 In the picture below is the software diagram for the MCU:
