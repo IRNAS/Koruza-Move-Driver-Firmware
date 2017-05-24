@@ -277,6 +277,9 @@ void communicate(void)
           if (parsed_command == COMMAND_RESTORE_MOTOR) {
             com_state = COM_RESTORE_MOTOR_STATE;
           }
+          else if (parsed_command == COMMAND_GET_STATUS) {
+            com_state = COM_GET_STATUS_STATE;
+          }
           else {
             com_state = COM_END_STATE;
           }
@@ -310,12 +313,12 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      Serial.print("motor position: (");
-      Serial.print(current_motor_position.x);
-      Serial.print(", ");
-      Serial.print(current_motor_position.y);
-      Serial.print(")");
-      Serial.println(do_homing);
+//      Serial.print("motor position: (");
+//      Serial.print(current_motor_position.x);
+//      Serial.print(", ");
+//      Serial.print(current_motor_position.y);
+//      Serial.print(")");
+//      Serial.println(do_homing);
       /*homing debug*/
 //      Serial.print("hinf ");
 //      Serial.print("X");
