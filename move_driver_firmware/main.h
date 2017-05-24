@@ -15,7 +15,9 @@
 #include "homing.h"
 #include "motor_move.h"
 
-//#include "SendOnlySoftwareSerial.h"
+#include "SendOnlySoftwareSerial.h"
+
+#define MOTOR_POSITION_UNDEFINED 0x80000000
 
 typedef enum{
 	COM_IDLE_STATE = 0,

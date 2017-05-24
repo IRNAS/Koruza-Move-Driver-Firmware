@@ -7,7 +7,6 @@
 #include "TLV493D.h" // https://github.com/IRNAS/TLV493D-3D-Magnetic-Sensor-Arduino-Library
 #include "Wire.h"
 
-
 enum class CalibrationState
 {
   STANDBY,

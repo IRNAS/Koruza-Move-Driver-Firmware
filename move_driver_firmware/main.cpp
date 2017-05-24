@@ -29,8 +29,8 @@ message_t msg_send;
 /* Command parsed form received message */
 tlv_command_t parsed_command;
 
-const int limit_switch1_pin = 4;
-const int limit_switch2_pin = 3;
+const int limit_switch1_pin = 3;
+const int limit_switch2_pin = 4;
 const unsigned long switch_debounce_delay = 50; //ms
 
 Switch limit_switch1(limit_switch1_pin, LOW, false, switch_debounce_delay);
@@ -45,15 +45,15 @@ const int sensor1_pwr_pin = A2;
 const int sensor2_pwr_pin = A3;
 const int i2c_sda = A4;
 
-const int stepper1_a_pin = 5;
-const int stepper1_b_pin = 6;
-const int stepper1_c_pin = 7;
-const int stepper1_d_pin = 8;
+const int stepper1_a_pin = 10;
+const int stepper1_b_pin = 9;
+const int stepper1_c_pin = A0;
+const int stepper1_d_pin = A1;
 
-const int stepper2_a_pin = 10;
-const int stepper2_b_pin = 9;
-const int stepper2_c_pin = A0;
-const int stepper2_d_pin = A1;
+const int stepper2_a_pin = 5;
+const int stepper2_b_pin = 6;
+const int stepper2_c_pin = 7;
+const int stepper2_d_pin = 8;
 
 AccelStepper stepper1(AccelStepper::HALF4WIRE, stepper1_a_pin, stepper1_c_pin, stepper1_b_pin, stepper1_d_pin, false);
 AccelStepper stepper2(AccelStepper::HALF4WIRE, stepper2_a_pin, stepper2_c_pin, stepper2_b_pin, stepper2_d_pin, false);
@@ -86,13 +86,13 @@ tlv_motor_position_t new_motor_position;
 
 tlv_motor_position_t position_test;
 
-//SendOnlySoftwareSerial //debugSerial(unused_gpio_pin);
+//SendOnlySoftwareSerial debugSerial(unused_gpio_pin);
 
 void init_mcu(void)
 {
   // begin serial communication
   Serial.begin(115200);
-
+  //Serial.println("Start");
   pinMode(unused_gpio_pin, OUTPUT);
   //debugSerial.begin(115200);
 
@@ -153,120 +153,76 @@ void init_devices(void)
   //status_EEPROM = EEPROMload();
 }
 
+/**
+   This function run motor
+*/
+static bool runm(AccelStepper *stepper, Switch *sw)
+{
+  bool sw_end = false;
+  /* Check if end sw is reached */   
+  if(sw->get_button_state() == true)
+  {
+    /* Negative direction end */
+    if(stepper->targetPosition()<stepper->currentPosition())
+    {
+      stepper->stop();
+      stepper->setCurrentPosition(stepper->currentPosition());//moveTo(stepper->currentPosition());
+      sw_end = true;
+    }
+  }
+
+  /* Motor move
+     motor pins are enabled only while moving to conserve power
+  */
+  if(stepper->currentPosition()!=stepper->targetPosition()){
+    stepper->enableOutputs();
+    stepper->run();
+  }
+  else{
+    stepper->stop();
+    stepper->disableOutputs();
+  }
+  return sw_end;
+}
+
+static bool homem(AccelStepper *stepper, Switch *sw){
+  
+    stepper->setCurrentPosition(-25000);
+    stepper->setMaxSpeed(1000);
+    stepper->setSpeed(500);
+    stepper->setAcceleration(500);
+    stepper->moveTo(0);
+    return true;
+}
 
 /**
    Handles the motor part of the firmware, movign, homing, calibration.
 */
 void run_motors(void)
 {
+  bool home_m1 = false;
+  bool home_m2 = false;
   /* First block, always do this part
        move morors if nesseseru,
        check encoder error calculation
        update the end sw and encoder error status
   */
 
-  //add here, encoder error calculation
+  home_m1 = runm(&stepper1, &limit_switch1); 
+  home_m2 = runm(&stepper2, &limit_switch2);
 
-  //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
-  //debugSerial.print("move_state: "); //debugSerial.println(move_state);
 
-  /* Motor move state mashine */
-  switch (move_state)
-  {
-    case MOVE_IDLE_STATE:
-      /* Motors are waiting */
-      if (do_homing == true)
-      {
-        move_state = MOVE_HOMING_STATE;
-      }
-      else if (do_calibration == true)
-      {
-        //Serial.println("set: MOVE_CALIBRATION_STATE");
-        move_state = MOVE_CALIBRATION_STATE;
-      }
-      else if (do_moving == true)
-      {
-        move_state = MOVE_MOVING_STATE;
-      }
-      else
-      {
-        move_state =  MOVE_IDLE_STATE;
-      }
-      break;
-
-    case MOVE_MOVING_STATE:
-
-      //debugSerial.println("MOVE_MOVING_STATE");
-      /* Do the moving routine */
-      motor_move1.process();
-      motor_move2.process();
-      
-      if (motor_move1.currentState() == MotorMoveState::STANDBY)
-      {
-        motor_move1.reset();
-      }
-
-      if (motor_move2.currentState() == MotorMoveState::STANDBY)
-      {
-        motor_move2.reset();
-      }
-
-      if ((motor_move1.currentState() == MotorMoveState::STANDBY) && (motor_move2.currentState() == MotorMoveState::STANDBY))
-      {
-        move_state = MOVE_IDLE_STATE;
-        do_moving = false;
-      }
-      else
-      {
-        do_moving = true;
-        move_state = MOVE_MOVING_STATE;
-      }
-
-      break;
-
-    case MOVE_HOMING_STATE:
-      /* Do the homing routine */
-      motor_homing1.process();
-      motor_homing2.process();
-
-      if (motor_homing1.currentState() == HomingState::STANDBY)
-      {
-        motor_homing1.reset();  
-      }
-
-      if (motor_homing2.currentState() == HomingState::STANDBY)
-      {
-        motor_homing2.reset();  
-      }
-
-      if ((motor_homing1.currentState() == HomingState::STANDBY) && (motor_homing2.currentState() == HomingState::STANDBY))
-      {
-        move_state = MOVE_IDLE_STATE;
-        do_homing = false;  
-      }
-      else
-      {
-        do_moving = true;
-        move_state = MOVE_HOMING_STATE;  
-      }
-      
-      break;
-
-    case MOVE_CALIBRATION_STATE:
-      /* Do the homing calibration,
-         check the end_sw_1 and end_sw_2 for end sw status
-      */
-
-      break;
-
-    case MOVE_ERROR_STATE:
-
-      break;
-
-    default:
-      move_state = MOVE_IDLE_STATE;
-      break;
+  if(do_homing == true){
+    if(home_m1 == true){
+      homem(&stepper1, &limit_switch1);
+    }
+    if(home_m2 == true){
+      homem(&stepper2, &limit_switch2);
+    }
   }
+
+
+
 }
 
 /**
@@ -326,28 +282,42 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      //debugSerial.print("current motor position: (");
-      //debugSerial.print(current_motor_position.x);
-      //debugSerial.print(", ");
-      //debugSerial.print(current_motor_position.y);
-      //debugSerial.println(")");
-
+//      Serial.print("motor position: (");
+//      Serial.print(current_motor_position.x);
+//      Serial.print(", ");
+//      Serial.print(current_motor_position.y);
+//      Serial.print(")");
+//      Serial.println(do_homing);
+      /*homing debug*/
+//      Serial.print("hinf ");
+//      Serial.print("X");
+//      Serial.print(": ");
+//      Serial.print(limit_switch1.get_button_state());
+//      Serial.print(" ,");
+//      Serial.print(stepper2.distanceToGo());
+//      Serial.print(";  ");
+//      Serial.print("Y");
+//      Serial.print(": ");
+//      Serial.print(limit_switch2.get_button_state());
+//      Serial.print(" ,");
+//      Serial.println(stepper1.distanceToGo());
+      
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
       message_free(&msg_send);
 
       /* Message generator */
-      //      Serial.println("Generated message: ");
-      //      message_init(&msg_send);
-      //      message_tlv_add_command(&msg_send, COMMAND_HOMING);
-      //      position_test.x = 0;
-      //      position_test.y = 50000;
-      //      message_tlv_add_motor_position(&msg_send, &position_test);
-      //      message_tlv_add_checksum(&msg_send);
-      //      send_bytes(&msg_send);
-      //      message_free(&msg_send);
-      //      Serial.println();
+//      Serial.println("Generated message: ");
+//      message_init(&msg_send);
+//      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
+//      position_test.x = 2000;
+//      position_test.y = -2147483648;
+//      message_tlv_add_motor_position(&msg_send, &position_test);
+//      message_tlv_add_checksum(&msg_send);
+//      send_bytes(&msg_send);
+//      message_free(&msg_send);
+//      Serial.println();
 
       com_state = COM_END_STATE;
       break;
@@ -362,11 +332,11 @@ void communicate(void)
       else
       {
         /* Debug for new received motor position */
-        //debugSerial.print("new motor position: (");
-        //debugSerial.print(new_motor_position.x);
-        //debugSerial.print(", ");
-        //debugSerial.print(new_motor_position.y);
-        //debugSerial.println(")");
+//        Serial.print("new position: (");
+//        Serial.print(new_motor_position.x);
+//        Serial.print(", ");
+//        Serial.print(new_motor_position.y);
+//        Serial.println(")");
 
         /* Set motor state mashine new state
             MOVE_RUN_STATE = 1,
@@ -374,16 +344,19 @@ void communicate(void)
             MOVE_CALIBRATION_STATE = 3,
         */
         
-        motor_move1.reset();
-        motor_move2.reset();
-        
+        do_homing = false;
         /* Set new coordinates for motors */
         // absolute move
-        motor_move1.moveTo((long)new_motor_position.x);
-        motor_move2.moveTo((long)new_motor_position.y);
+    		if(new_motor_position.x != MOTOR_POSITION_UNDEFINED){
+    			stepper1.moveTo((long)new_motor_position.x);
+    		}
+    		if(new_motor_position.y != MOTOR_POSITION_UNDEFINED){
+    			stepper2.moveTo((long)new_motor_position.y);
+    		}
+        /* if command to move motors is send during homing,
+           motors will go to new position and stop homing routine
+        */
 
-        /* Start moving in the move state mashine */
-        do_moving = true;
 
         com_state = COM_END_STATE;
       }
@@ -392,15 +365,10 @@ void communicate(void)
     case COM_HOMING_STATE:
       /* Debug the homming routine */
       //Serial.println("homing");
-      motor_homing1.reset();
-      motor_homing2.reset();
-      motor_move1.reset();
-      motor_move2.reset();
-
-      motor_homing1.start();
-      motor_homing2.start();
-
+      stepper1.moveTo(-1000000);
+      stepper2.moveTo(-1000000);
       do_homing = true;
+
 
       com_state = COM_END_STATE;
       break;
