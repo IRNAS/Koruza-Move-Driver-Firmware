@@ -27,7 +27,8 @@ typedef enum{
 	COM_HOMING_STATE = 4,
 	COM_CALIBRATION_STATE = 5,
 	COM_ERROR_STATE = 6,
-  COM_END_STATE = 7
+  COM_END_STATE = 7,
+  COM_RESTORE_MOTOR_STATE = 8
 } com_state_t;
 
 typedef enum{
