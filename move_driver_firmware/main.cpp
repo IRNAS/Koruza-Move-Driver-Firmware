@@ -282,25 +282,25 @@ void communicate(void)
       current_motor_position.y = stepper2.currentPosition();
 
       /* Debug for new received motor position */
-      Serial.print("motor position: (");
-      Serial.print(current_motor_position.x);
-      Serial.print(", ");
-      Serial.print(current_motor_position.y);
-      Serial.print(")");
-      Serial.println(do_homing);
+//      Serial.print("motor position: (");
+//      Serial.print(current_motor_position.x);
+//      Serial.print(", ");
+//      Serial.print(current_motor_position.y);
+//      Serial.print(")");
+//      Serial.println(do_homing);
       /*homing debug*/
-      Serial.print("hinf ");
-      Serial.print("X");
-      Serial.print(": ");
-      Serial.print(limit_switch1.get_button_state());
-      Serial.print(" ,");
-      Serial.print(stepper2.distanceToGo());
-      Serial.print(";  ");
-      Serial.print("Y");
-      Serial.print(": ");
-      Serial.print(limit_switch2.get_button_state());
-      Serial.print(" ,");
-      Serial.println(stepper1.distanceToGo());
+//      Serial.print("hinf ");
+//      Serial.print("X");
+//      Serial.print(": ");
+//      Serial.print(limit_switch1.get_button_state());
+//      Serial.print(" ,");
+//      Serial.print(stepper2.distanceToGo());
+//      Serial.print(";  ");
+//      Serial.print("Y");
+//      Serial.print(": ");
+//      Serial.print(limit_switch2.get_button_state());
+//      Serial.print(" ,");
+//      Serial.println(stepper1.distanceToGo());
       
       message_tlv_add_motor_position(&msg_send, &current_motor_position);
       message_tlv_add_checksum(&msg_send);
