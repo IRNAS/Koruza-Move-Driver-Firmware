@@ -332,8 +332,11 @@ void communicate(void)
 //      Serial.print(limit_switch2.get_button_state());
 //      Serial.print(" ,");
 //      Serial.println(stepper1.distanceToGo());
-      
-      message_tlv_add_motor_position(&msg_send, &current_motor_position);
+
+      // motor position on the status reply is sent after restoring motor position
+      if(restore_position != true){
+        message_tlv_add_motor_position(&msg_send, &current_motor_position);
+      }
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
       message_free(&msg_send);
