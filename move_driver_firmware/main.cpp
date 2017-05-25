@@ -222,9 +222,6 @@ void run_motors(void)
       homem(&stepper2, &limit_switch2);
     }
   }
-
-
-
 }
 
 /**
@@ -241,19 +238,6 @@ void communicate(void)
     case COM_IDLE_STATE:
       if (command_received)
       {
-         /* Message generator */
-//        Serial.println("Generated message: ");
-//        Serial.println();
-//        Serial.println();
-//        message_init(&msg_send);
-//        message_tlv_add_command(&msg_send, COMMAND_RESTORE_MOTOR);
-//        position_test.x = 201;
-//        position_test.y = -302;
-//        message_tlv_add_motor_position(&msg_send, &position_test);
-//        message_tlv_add_checksum(&msg_send);
-//        send_bytes(&msg_send);
-//        message_free(&msg_send);
-//        Serial.println();
         com_state = COM_TLV_ACTIVE_STATE;
       }
       else
@@ -272,7 +256,7 @@ void communicate(void)
       }
       else
       {
-        // first restore position coordinates, no other commands allowed
+        // first restore position coordinates, no other commands allowed except get status without motor position
         if(restore_position == true){
           if (parsed_command == COMMAND_RESTORE_MOTOR) {
             com_state = COM_RESTORE_MOTOR_STATE;
