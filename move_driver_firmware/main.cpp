@@ -72,6 +72,8 @@ uint8_t status_sensor1;
 uint8_t status_sensor2;
 bool status_EEPROM;
 
+bool restore_position = true;
+
 //volatile koruza_move_t koruza_move;
 
 com_state_t com_state = COM_IDLE_STATE;
@@ -220,9 +222,6 @@ void run_motors(void)
       homem(&stepper2, &limit_switch2);
     }
   }
-
-
-
 }
 
 /**
@@ -232,6 +231,7 @@ void run_motors(void)
 void communicate(void)
 {
   //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
+
 
   switch (com_state)
   {
@@ -256,20 +256,35 @@ void communicate(void)
       }
       else
       {
-        if (parsed_command == COMMAND_GET_STATUS) {
-          com_state = COM_GET_STATUS_STATE;
+        // first restore position coordinates, no other commands allowed except get status without motor position
+        if(restore_position == true){
+          if (parsed_command == COMMAND_RESTORE_MOTOR) {
+            com_state = COM_RESTORE_MOTOR_STATE;
+          }
+          else if (parsed_command == COMMAND_GET_STATUS) {
+            com_state = COM_GET_STATUS_STATE;
+          }
+          else {
+            com_state = COM_END_STATE;
+          }
         }
-        else if (parsed_command == COMMAND_MOVE_MOTOR) {
-          com_state = COM_MOVE_MOTOR_STATE;
-        }
-        else if (parsed_command == COMMAND_HOMING) {
-          com_state = COM_HOMING_STATE;
-        }
-        else if (parsed_command == COMMAND_CALIBRATE_SENSORS) {
-          com_state = COM_CALIBRATION_STATE;
-        }
-        else {
-          com_state = COM_END_STATE;
+        // after restore, all other commands are allowed, except restore motor
+        else{
+          if (parsed_command == COMMAND_GET_STATUS) {
+            com_state = COM_GET_STATUS_STATE;
+          }
+          else if (parsed_command == COMMAND_MOVE_MOTOR) {
+            com_state = COM_MOVE_MOTOR_STATE;
+          }
+          else if (parsed_command == COMMAND_HOMING) {
+            com_state = COM_HOMING_STATE;
+          }
+          else if (parsed_command == COMMAND_CALIBRATE_SENSORS) {
+            com_state = COM_CALIBRATION_STATE;
+          }
+          else {
+            com_state = COM_END_STATE;
+          }
         }
       }
       break;
@@ -301,23 +316,16 @@ void communicate(void)
 //      Serial.print(limit_switch2.get_button_state());
 //      Serial.print(" ,");
 //      Serial.println(stepper1.distanceToGo());
-      
-      message_tlv_add_motor_position(&msg_send, &current_motor_position);
+
+      // motor position on the status reply is sent after restoring motor position
+      if(restore_position != true){
+        message_tlv_add_motor_position(&msg_send, &current_motor_position);
+      }
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
       message_free(&msg_send);
 
-      /* Message generator */
-//      Serial.println("Generated message: ");
-//      message_init(&msg_send);
-//      message_tlv_add_command(&msg_send, COMMAND_MOVE_MOTOR);
-//      position_test.x = 2000;
-//      position_test.y = -2147483648;
-//      message_tlv_add_motor_position(&msg_send, &position_test);
-//      message_tlv_add_checksum(&msg_send);
-//      send_bytes(&msg_send);
-//      message_free(&msg_send);
-//      Serial.println();
+     
 
       com_state = COM_END_STATE;
       break;
@@ -373,8 +381,24 @@ void communicate(void)
       com_state = COM_END_STATE;
       break;
 
-    case COM_CALIBRATION_STATE:
+    case COM_RESTORE_MOTOR_STATE:
+      if (message_tlv_get_motor_position(&msg_parsed, &new_motor_position) != MESSAGE_SUCCESS)
+      {
+        message_free(&msg_parsed);
+        com_state = COM_ERROR_STATE;
+      }
+      else{
+        stepper1.setCurrentPosition((long)new_motor_position.x);
+        stepper2.setCurrentPosition((long)new_motor_position.y);
 
+        //motor position is restored, block restore command
+        restore_position = false;
+        com_state = COM_END_STATE;
+      }
+      break;
+
+    case COM_CALIBRATION_STATE:
+      
       break;
 
     case COM_ERROR_STATE:
