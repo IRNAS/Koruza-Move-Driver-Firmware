@@ -38,8 +38,7 @@ typedef enum {
   TLV_CHECKSUM = 3,
   TLV_MOTOR_POSITION = 4,
   TLV_ERROR_REPORT = 7,
-  TLV_DEBUG = 9,
-  TLV_ENCODER_VALUE = 10,
+  TLV_ENCODER_VALUE = 9,
 } tlv_type_t;
 
 
