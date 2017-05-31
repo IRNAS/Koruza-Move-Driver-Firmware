@@ -86,6 +86,8 @@ bool do_moving = false;
 tlv_motor_position_t current_motor_position;
 tlv_motor_position_t new_motor_position;
 
+tlv_encoder_value_t current_encoder_value;
+
 tlv_motor_position_t position_test;
 
 //SendOnlySoftwareSerial debugSerial(unused_gpio_pin);
@@ -290,6 +292,11 @@ void communicate(void)
       break;
 
     case COM_GET_STATUS_STATE:
+
+      sensor1.update();
+      //Serial.println(100*atan(sensor1.m_dBx/sensor1.m_dBy));
+      current_encoder_value.x = (int32_t)(1000*atan(sensor1.m_dBx/sensor1.m_dBy));
+      current_encoder_value.y = (int32_t)(1000*atan(sensor2.m_dBx/sensor2.m_dBy));
       /* Init for sending message */
       message_init(&msg_send);
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
@@ -320,6 +327,8 @@ void communicate(void)
       // motor position on the status reply is sent after restoring motor position
       if(restore_position != true){
         message_tlv_add_motor_position(&msg_send, &current_motor_position);
+        message_tlv_add_encoder_value(&msg_send, &current_encoder_value);
+        
       }
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);

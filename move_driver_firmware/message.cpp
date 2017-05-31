@@ -155,6 +155,14 @@ message_result_t message_tlv_add_motor_position(message_t *message, const tlv_mo
   return message_tlv_add(message, TLV_MOTOR_POSITION, sizeof(tlv_motor_position_t), (uint8_t*) &tmp);
 }
 
+message_result_t message_tlv_add_encoder_value(message_t *message, const tlv_encoder_value_t *value)
+{
+  tlv_encoder_value_t tmp;
+  tmp.x = htonl(value->x);
+  tmp.y = htonl(value->y);
+  return message_tlv_add(message, TLV_ENCODER_VALUE, sizeof(tlv_encoder_value_t), (uint8_t*) &tmp);
+}
+
 message_result_t message_tlv_add_checksum(message_t *message)
 {
   uint32_t checksum = message_checksum(message);
