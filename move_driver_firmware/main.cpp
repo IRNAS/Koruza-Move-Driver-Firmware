@@ -294,9 +294,10 @@ void communicate(void)
     case COM_GET_STATUS_STATE:
 
       sensor1.update();
+      sensor2.update();
       //Serial.println(100*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.x = (int32_t)(1000*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.y = (int32_t)(1000*atan(sensor2.m_dBx/sensor2.m_dBy));
+      current_encoder_value.y = (int32_t)(100*atan(sensor1.m_dBx/sensor1.m_dBy));
+      current_encoder_value.x = (int32_t)(100*atan(sensor2.m_dBx/sensor2.m_dBy));
       /* Init for sending message */
       message_init(&msg_send);
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
