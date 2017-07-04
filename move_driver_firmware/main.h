@@ -19,6 +19,10 @@
 
 #define MOTOR_POSITION_UNDEFINED 0x80000000
 
+/* Furthest point of the motor from the end switch */
+#define MOTOR_X_HOMING_POSITION -90000
+#define MOTOR_Y_HOMING_POSITION -90000
+
 typedef enum{
 	COM_IDLE_STATE = 0,
 	COM_TLV_ACTIVE_STATE = 1,

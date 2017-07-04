@@ -383,8 +383,8 @@ void communicate(void)
     case COM_HOMING_STATE:
       /* Debug the homming routine */
       //Serial.println("homing");
-      stepper1.moveTo(-1000000);
-      stepper2.moveTo(-1000000);
+      stepper1.moveTo(MOTOR_X_HOMING_POSITION);
+      stepper2.moveTo(MOTOR_Y_HOMING_POSITION);
       do_homing = true;
 
 
