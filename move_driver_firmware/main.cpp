@@ -309,6 +309,7 @@ void communicate(void)
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
       current_motor_position.x = stepper1.currentPosition();
       current_motor_position.y = stepper2.currentPosition();
+      current_motor_position.z = 0;
 
       /* Debug for new received motor position */
 //      Serial.print("motor position: (");
