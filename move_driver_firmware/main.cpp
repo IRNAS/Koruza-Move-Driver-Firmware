@@ -249,6 +249,12 @@ void communicate(void)
       break;
 
     case COM_TLV_ACTIVE_STATE:
+//      for(int i = 0; i < message_len; i++){
+//        Serial.print(rx_buffer[i], HEX);
+//        Serial.print(" ");  
+//      }
+//      Serial.println();
+    
       frame_parser((uint8_t *)&rx_buffer, message_len, &msg_parsed);
 
       if (message_tlv_get_command(&msg_parsed, &parsed_command) != MESSAGE_SUCCESS)
@@ -303,6 +309,7 @@ void communicate(void)
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
       current_motor_position.x = stepper1.currentPosition();
       current_motor_position.y = stepper2.currentPosition();
+      current_motor_position.z = 0;
 
       /* Debug for new received motor position */
 //      Serial.print("motor position: (");
@@ -438,13 +445,17 @@ void receive_bytes(void)
     if (rx_indx == 0) {
       for (int i = 0; i < 100; i++) rx_buffer[i] = 0;
     }
-
+//    Serial.print("rx_index: "); Serial.print(rx_indx); Serial.print("\t");    
+//    Serial.print("rx_data: ");  Serial.print(rx_data[0], HEX); Serial.print("\t");
+//    Serial.print("rx_last[0]: ");  Serial.print(rx_last[0], HEX); Serial.print("\t");
+//    Serial.print("rx_last[1]: ");  Serial.println(rx_last[1], HEX);
+    
     /* Start byte received */
     if (rx_data[0] == FRAME_MARKER_START) {
       /* Start byte received in the frame */
-      //      //debugSerial.println("rx_last, rx_buff[0]:");
-      //      //debugSerial.println(rx_last[0], HEX);
-      //      //debugSerial.println(rx_buffer[0], HEX);
+//      Serial.println("rx_last, rx_buff[0]:");
+//      Serial.println(rx_last[0], HEX);
+//      Serial.println(rx_buffer[0], HEX);
       if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
         rx_buffer[rx_indx++] = rx_data[0];
       }
@@ -458,14 +469,16 @@ void receive_bytes(void)
     /* End byte received */
     else if (rx_data[0] == FRAME_MARKER_END) {
       /* End byte received in the frame */
-      if (rx_last[0] == FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START) {
+      if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_last[1] != FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
         rx_buffer[rx_indx++] = rx_data[0];
       }
       /* Real end byte received */
-      else if (rx_last[0] != FRAME_MARKER_ESCAPE && rx_buffer[0] == FRAME_MARKER_START) {
+      else if ((rx_last[0] != FRAME_MARKER_ESCAPE || (rx_last[0] == FRAME_MARKER_ESCAPE && rx_last[1] == FRAME_MARKER_ESCAPE)) && rx_buffer[0] == FRAME_MARKER_START) {
         rx_buffer[rx_indx++] = rx_data[0];
         message_len = rx_indx;
         rx_indx = 0;
+        rx_last[0] = 0;
+        rx_last[1] = 0;
         /* Transfer complete, data is ready to read */
         command_received = true;
         /* Disable USART1 interrupt */
@@ -478,7 +491,8 @@ void receive_bytes(void)
       }
     }
     /* Store last received byte for ESC check */
+    rx_last[1] = rx_last[0];
     rx_last[0] = rx_data[0];
-
+    //Serial.print("command received: "); Serial.println(command_received);
   }
 }

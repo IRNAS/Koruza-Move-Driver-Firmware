@@ -10,10 +10,11 @@ SendOnlySoftwareSerial debugSerial(unused_gpio_pin);
 
 void setup()
 {
-  debugSerial.begin(115200);
+  //debugSerial.begin(115200);
   init_mcu();
   init_devices();
   //debugSerial.println("test begin");
+  //Serial.println("Start");
 }
 
 void loop()
