@@ -38,7 +38,7 @@ typedef enum {
   TLV_CHECKSUM = 3,
   TLV_MOTOR_POSITION = 4,
   TLV_ERROR_REPORT = 7,
-  TLV_DEBUG = 9,
+  TLV_ENCODER_VALUE = 9,
 } tlv_type_t;
 
 
@@ -72,7 +72,16 @@ typedef enum {
 typedef struct {
   int32_t x;
   int32_t y;
+  int32_t z;
 } tlv_motor_position_t;
+
+/**
+   Contents of the encoder TLV.
+*/
+typedef struct {
+  int32_t x;
+  int32_t y;
+} tlv_encoder_value_t;
 
 
 typedef struct {
@@ -183,6 +192,14 @@ message_result_t message_tlv_add_reply(message_t *message, tlv_reply_t reply);
 */
 message_result_t message_tlv_add_motor_position(message_t *message, const tlv_motor_position_t *position);
 
+/**
+   Adds a encoder value TLV to a protocol message.
+
+   @param message Destination message instance to add the TLV to
+   @param value encoder value
+   @return Operation result code
+*/
+message_result_t message_tlv_add_encoder_value(message_t *message, const tlv_encoder_value_t *value);
 
 /**
    Adds a checksum TLV to a protocol message. The checksum value is automatically

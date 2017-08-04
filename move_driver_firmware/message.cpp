@@ -152,7 +152,16 @@ message_result_t message_tlv_add_motor_position(message_t *message, const tlv_mo
   tlv_motor_position_t tmp;
   tmp.x = htonl(position->x);
   tmp.y = htonl(position->y);
+  tmp.z = htonl(position->z);
   return message_tlv_add(message, TLV_MOTOR_POSITION, sizeof(tlv_motor_position_t), (uint8_t*) &tmp);
+}
+
+message_result_t message_tlv_add_encoder_value(message_t *message, const tlv_encoder_value_t *value)
+{
+  tlv_encoder_value_t tmp;
+  tmp.x = htonl(value->x);
+  tmp.y = htonl(value->y);
+  return message_tlv_add(message, TLV_ENCODER_VALUE, sizeof(tlv_encoder_value_t), (uint8_t*) &tmp);
 }
 
 message_result_t message_tlv_add_checksum(message_t *message)
@@ -321,33 +330,6 @@ message_result_t message_tlv_get_error_report(const message_t *message, tlv_erro
   return MESSAGE_SUCCESS;
 }
 
-message_result_t message_tlv_add_debug_string(message_t *message, String debug_string)
-{
-  // Length (with one extra character for the null terminator).
-  int str_len = debug_string.length() + 1; 
-  
-  // Prepare the character array (the buffer).
-  char char_array[str_len];
-  
-  // Copy it over.
-  debug_string.toCharArray(char_array, str_len);
 
-  // Add debug TLV to a protocol message.
-  return message_tlv_add(message, TLV_DEBUG, str_len, (uint8_t*) char_array);
-}
 
-message_result_t message_tlv_get_debug_string(const message_t *message, String *debug_string)
-{
-  for (size_t i = 0; i < message->length; i++)
-  {
-    if (message->tlv[i].type == TLV_DEBUG)
-    {
-      *debug_string = String((char*) message->tlv[i].value);
-      return MESSAGE_SUCCESS;
-    }
-  }
-
-  debug_string = nullptr;
-  return MESSAGE_ERROR_TLV_NOT_FOUND;
-}
 
