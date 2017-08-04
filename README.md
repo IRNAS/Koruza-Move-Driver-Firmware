@@ -16,11 +16,11 @@ The last layer is the application layer where the main state machine is implemen
 * IDLE
 * TLV ACTIVE: TLV message received, parsing the received message
 * ERROR: bad TLV message received
-* STATUS: response with driver status message
+* STATUS: response with driver status message, after the motor positin is restored driver responce with the current position
 * PARAMETERS: response with parameters for calibration
 * HOMING: do the homing routine
 * MOVE: move to given coordinate
-* RESTORE PARAMETERS: restore move parameters.
+* RESTORE PARAMETERS: restore move parameters, before restore it is not posibile to move the motors nor do homing.
 
 The firmware upgrade is done through the UART and MCU bootloader, after that the MCU restarts for the new firmware to boot. The MCU can be rebooted (hard restart) asynchronously. 
 
