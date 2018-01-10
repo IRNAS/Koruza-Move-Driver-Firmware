@@ -4,17 +4,16 @@
 /*** RECEIVING DATA VARIABLES ***/
 /* True when receiving string is completed */
 boolean command_received = false;
-boolean send_frame_bool = true;
-/* Receiving buffer for incomming serial data */
+/* Receiving buffer for incoming serial data */
 volatile uint8_t rx_buffer[100];
-/* Temperary receiving buffer for incomming serial data*/
+/* Temporary receiving buffer for incoming serial data*/
 uint8_t rx_data[2];
 /* Number of bytes received on serial */
-int rx_indx;
-/* Check buffer for receiving serual data */
-uint8_t rx_last[2] = {0x00, 0x00};
+int rx_indx = 0;
 /* Final length of serial received data */
 int message_len = 0;
+/* True when escape received before character that should be escaped */
+boolean is_frame_marker_escape_received = false;
 
 /* Parsed message */
 message_t msg_parsed;
@@ -440,59 +439,66 @@ void receive_bytes(void)
   //debugSerial.println("receiving bytes");
   
   while (Serial.available()) {
+    /* Receive new data */
     rx_data[0] = (uint8_t)Serial.read();
-    /* Clear Rx_Buffer before receiving new data */
-    if (rx_indx == 0) {
-      for (int i = 0; i < 100; i++) rx_buffer[i] = 0;
-    }
-//    Serial.print("rx_index: "); Serial.print(rx_indx); Serial.print("\t");    
-//    Serial.print("rx_data: ");  Serial.print(rx_data[0], HEX); Serial.print("\t");
-//    Serial.print("rx_last[0]: ");  Serial.print(rx_last[0], HEX); Serial.print("\t");
-//    Serial.print("rx_last[1]: ");  Serial.println(rx_last[1], HEX);
-    
-    /* Start byte received */
-    if (rx_data[0] == FRAME_MARKER_START) {
-      /* Start byte received in the frame */
-//      Serial.println("rx_last, rx_buff[0]:");
-//      Serial.println(rx_last[0], HEX);
-//      Serial.println(rx_buffer[0], HEX);
-      if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
-        rx_buffer[rx_indx++] = rx_data[0];
-      }
-      /* Real start byte received */
-      else if (rx_last[0] != FRAME_MARKER_ESCAPE) {
-        rx_indx = 0;
-        rx_buffer[rx_indx++] = rx_data[0];
 
-      }
-    }
-    /* End byte received */
-    else if (rx_data[0] == FRAME_MARKER_END) {
-      /* End byte received in the frame */
-      if ((rx_last[0] == FRAME_MARKER_ESCAPE) && (rx_last[1] != FRAME_MARKER_ESCAPE) && (rx_buffer[0] == FRAME_MARKER_START)) {
+    /* Start byte received */
+    if (rx_data[0] == FRAME_MARKER_START)
+    {
+      /* Start byte received in the frame */
+      if ((is_frame_marker_escape_received == true) && (rx_buffer[0] == FRAME_MARKER_START))
+      {
         rx_buffer[rx_indx++] = rx_data[0];
       }
-      /* Real end byte received */
-      else if ((rx_last[0] != FRAME_MARKER_ESCAPE || (rx_last[0] == FRAME_MARKER_ESCAPE && rx_last[1] == FRAME_MARKER_ESCAPE)) && rx_buffer[0] == FRAME_MARKER_START) {
+      else
+      {
+        /* Real start byte received */
+        rx_indx = 0;
+        /* Clear buffer since start of the new frame is detected */
+        for (int i = 0; i < 100; i++)
+        {
+          rx_buffer[i] = 0;
+        }
+        /* Store start marker to buffer */ 
+        rx_buffer[rx_indx++] = rx_data[0];
+      }
+    }
+    else if (rx_data[0] == FRAME_MARKER_END)
+    {
+      /* End byte received */
+      if ((is_frame_marker_escape_received == true) && (rx_buffer[0] == FRAME_MARKER_START))
+      {
+        rx_buffer[rx_indx++] = rx_data[0];
+      }
+      else if (rx_buffer[0] == FRAME_MARKER_START)
+      {
+        /* Real end byte received */
         rx_buffer[rx_indx++] = rx_data[0];
         message_len = rx_indx;
         rx_indx = 0;
-        rx_last[0] = 0;
-        rx_last[1] = 0;
         /* Transfer complete, data is ready to read */
         command_received = true;
         /* Disable USART1 interrupt */
-        //HAL_NVIC_DisableIRQ(USART1_IRQn);
       }
     }
-    else {
-      if (rx_buffer[0] == FRAME_MARKER_START) {
+    else
+    {
+      /* If FRAME is valid */ 
+      if (rx_buffer[0] == FRAME_MARKER_START)
+      {
+        /* put received character in the buffer */
         rx_buffer[rx_indx++] = rx_data[0];
       }
     }
-    /* Store last received byte for ESC check */
-    rx_last[1] = rx_last[0];
-    rx_last[0] = rx_data[0];
-    //Serial.print("command received: "); Serial.println(command_received);
+
+    /* Handle ESC frame check */
+    if ((rx_data[0] == FRAME_MARKER_ESCAPE) && (is_frame_marker_escape_received == false))
+    {
+      is_frame_marker_escape_received = true;
+    }
+    else
+    {
+      is_frame_marker_escape_received = false;
+    }
   }
 }
