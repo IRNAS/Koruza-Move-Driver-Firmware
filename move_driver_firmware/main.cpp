@@ -39,6 +39,27 @@ const int unused_gpio_pin = 2;
 
 TLV493D sensor1;
 TLV493D sensor2;
+/////////////
+/////////////
+//Test Data//
+
+unsigned int homing_state;  //HOMING_START
+enum homing_test {
+  HOMING_START                 = 0,
+  HOMING_GO_TO_0               = 1,
+  HOMING_MOVING_BEFORE_SENSORS = 2,
+  HOMING_READ_SENSORS          = 3,
+  HOMING_IDLE                  = 4
+};
+
+int sign; //1
+int increment; //1
+bool stepper1_reached_end; //false
+bool stepper2_reached_end; //false
+int stepper1_current_position_previous;
+int stepper2_current_position_previous;
+
+
 
 const int sensor1_pwr_pin = A2;
 const int sensor2_pwr_pin = A3;
@@ -128,7 +149,9 @@ void init_devices(void)
   delay(500);
 
   Wire.begin(); // begin I2C communication
-
+  // I2C speed set to 400kHz to reduce time needed 
+  // to process magnetic sensors
+  Wire.setClock(400000);
 
   // initialize sensor 1
   status_sensor1 = sensor1.init(LOW); // address = 0x1F
@@ -136,6 +159,12 @@ void init_devices(void)
   // initialize sensor 2
   status_sensor2 = sensor2.init(HIGH); // address = 0x5E
 
+  //homing_state = HOMING_IDLE;
+  homing_state = HOMING_START;
+  stepper1_reached_end = false;
+  stepper2_reached_end = false;
+  sign = 1;
+  increment = 1;
 
   // initialize stepper motor 1
   stepper1.setCurrentPosition(0);
@@ -190,7 +219,7 @@ static bool runm(AccelStepper *stepper, Switch *sw)
 
 static bool homem(AccelStepper *stepper, Switch *sw){
   
-    stepper->setCurrentPosition(-25000);
+    stepper->setCurrentPosition(-15000);
     stepper->setMaxSpeed(1000);
     stepper->setSpeed(500);
     stepper->setAcceleration(500);
@@ -218,9 +247,11 @@ void run_motors(void)
   if(do_homing == true){
     if(home_m1 == true){
       homem(&stepper1, &limit_switch1);
+      stepper1_reached_end = true;
     }
     if(home_m2 == true){
       homem(&stepper2, &limit_switch2);
+      stepper2_reached_end = true;
     }
   }
 }
@@ -232,7 +263,6 @@ void run_motors(void)
 void communicate(void)
 {
   //debugSerial.print("do_moving: "); //debugSerial.println(do_moving);
-
 
   switch (com_state)
   {
@@ -298,38 +328,17 @@ void communicate(void)
 
     case COM_GET_STATUS_STATE:
 
-      sensor1.update();
-      sensor2.update();
+      sensor1.update(0, 0, 1, 1);
+      sensor2.update(0, 0, 1, 1);
       //Serial.println(100*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.y = (int32_t)(100*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.x = (int32_t)(100*atan(sensor2.m_dBx/sensor2.m_dBy));
+      //current_encoder_value.y = (int32_t)(100*atan(sensor1.m_dBx/sensor1.m_dBy));
+      //current_encoder_value.x = (int32_t)(100*atan(sensor2.m_dBx/sensor2.m_dBy));
       /* Init for sending message */
       message_init(&msg_send);
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
       current_motor_position.x = stepper1.currentPosition();
       current_motor_position.y = stepper2.currentPosition();
       current_motor_position.z = 0;
-
-      /* Debug for new received motor position */
-//      Serial.print("motor position: (");
-//      Serial.print(current_motor_position.x);
-//      Serial.print(", ");
-//      Serial.print(current_motor_position.y);
-//      Serial.print(")");
-//      Serial.println(do_homing);
-      /*homing debug*/
-//      Serial.print("hinf ");
-//      Serial.print("X");
-//      Serial.print(": ");
-//      Serial.print(limit_switch1.get_button_state());
-//      Serial.print(" ,");
-//      Serial.print(stepper2.distanceToGo());
-//      Serial.print(";  ");
-//      Serial.print("Y");
-//      Serial.print(": ");
-//      Serial.print(limit_switch2.get_button_state());
-//      Serial.print(" ,");
-//      Serial.println(stepper1.distanceToGo());
 
       // motor position on the status reply is sent after restoring motor position
       if(restore_position != true){
@@ -340,8 +349,6 @@ void communicate(void)
       message_tlv_add_checksum(&msg_send);
       send_bytes(&msg_send);
       message_free(&msg_send);
-
-     
 
       com_state = COM_END_STATE;
       break;
@@ -427,6 +434,115 @@ void communicate(void)
 
       command_received = false;
       com_state = COM_IDLE_STATE;
+      break;
+  }
+}
+
+void test_homing_and_calibration(void)
+{
+  switch (homing_state)
+  {
+    case HOMING_START:
+      stepper1.moveTo(MOTOR_X_HOMING_POSITION);
+      stepper2.moveTo(MOTOR_Y_HOMING_POSITION);
+      do_homing = true;
+      homing_state = HOMING_GO_TO_0;
+
+      break;
+      
+    case HOMING_GO_TO_0:
+      
+      if ((stepper1_reached_end == true) && (stepper2_reached_end == true))
+      {
+        do_homing = false;
+        homing_state = HOMING_MOVING_BEFORE_SENSORS;
+      }
+      break;
+
+    case HOMING_MOVING_BEFORE_SENSORS:
+      
+      if ((stepper1.currentPosition() >= -9000) && (stepper2.currentPosition() >= -9000))
+      {
+        homing_state = HOMING_READ_SENSORS;
+        stepper1_current_position_previous = -4096;
+        stepper2_current_position_previous = -4096;
+      }
+
+      break;
+
+    case HOMING_READ_SENSORS:
+
+      if (stepper1.currentPosition() >= -4096)
+      {
+        if (stepper1_current_position_previous != stepper1.currentPosition())
+        {
+          int i = 0;
+          stepper1_current_position_previous = stepper1.currentPosition();
+          while (sensor1.update(0, 0, 1, 1))
+          {
+            i++;
+          }
+          
+          Serial.print("S1:");
+          Serial.print(",");
+          Serial.print(sensor1.m_dBx);
+          Serial.print(",");
+          Serial.print(sensor1.m_dBy);
+          Serial.print(",");
+          Serial.print(sensor1.m_dPhi_xy);
+          Serial.print(",");
+          Serial.print(stepper1.currentPosition());
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(i);
+          Serial.println(",");
+        }
+      }
+  
+      if (stepper2.currentPosition() >= -4096)
+      {
+        if (stepper2_current_position_previous != stepper2.currentPosition())
+        {
+          int y = 0; 
+          stepper2_current_position_previous = stepper2.currentPosition();
+          while (sensor2.update(0, 0, 1, 1))
+          {
+            y++;
+          }
+
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print(",");
+          Serial.print("S2:");
+          Serial.print(",");
+          Serial.print(sensor2.m_dBx);
+          Serial.print(",");
+          Serial.print(sensor2.m_dBy);
+          Serial.print(",");
+          Serial.print(sensor2.m_dPhi_xy);
+          Serial.print(",");
+          Serial.print(stepper2.currentPosition());
+          Serial.print(",");
+          Serial.print(y);
+          Serial.println(",");
+        }
+      }
+
+      if ((stepper1.currentPosition() == 0) && (stepper2.currentPosition() == 0))
+      {
+        homing_state = HOMING_IDLE;
+      }
+      
+      break;
+
+    case HOMING_IDLE:
+     
       break;
   }
 }

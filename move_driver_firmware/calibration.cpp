@@ -132,7 +132,7 @@ uint8_t Calibration::calculate_step(long& motor_step)
 
   while (count_tries > 0)
   {
-    status_sensor = m_sensor.update();
+    status_sensor = m_sensor.update(0, 0, 1, 1);
     if (status_sensor != 0x02) break; // if 0x02 the sensor is busy, need to try again
     count_tries --;
   }
@@ -254,7 +254,7 @@ void Calibration::process()
         // try to update sensor value
         while (count_tries > 0)
         {
-          status_sensor = m_sensor.update();
+          status_sensor = m_sensor.update(0, 0, 1, 1);
           if (status_sensor != 0x02) break;
           count_tries --;
         }

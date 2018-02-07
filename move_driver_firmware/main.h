@@ -53,6 +53,16 @@ typedef struct{
 	move_state_t move_state;
 } koruza_move_t;
 
+typedef struct {
+  double offsetx;
+  double offsety;
+  double amplitudex;
+  double amplitudey;
+} calibration_data_t;
+
+const calibration_data_t sensor1_calibration_data = {0.59,  0.295, 38.12,  2.845};
+const calibration_data_t sensor2_calibration_data = {0.785, 0.145, 37.925, 6.025};
+
 extern volatile koruza_move_t koruza_move; 
 
 /**
@@ -69,6 +79,11 @@ void init_devices(void);
    Handles the motor part of the firmware, movign, homing, calibration.
 */
 void run_motors(void);
+
+/**
+   Sends calibration data for both sensors to serial port
+*/
+void test_homing_and_calibration(void);
 
 /**
    Handles the communication part of the formware, decoding messages,
