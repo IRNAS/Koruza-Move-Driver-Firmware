@@ -53,6 +53,16 @@ typedef struct{
 	move_state_t move_state;
 } koruza_move_t;
 
+typedef struct {
+  double offsetx;
+  double offsety;
+  double amplitudex;
+  double amplitudey;
+} calibration_data_t;
+
+const calibration_data_t sensor1_calibration_data = {0.59,  0.295, 38.12,  2.845};
+const calibration_data_t sensor2_calibration_data = {0.785, 0.145, 37.925, 6.025};
+
 extern volatile koruza_move_t koruza_move; 
 
 /**

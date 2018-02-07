@@ -128,7 +128,9 @@ void init_devices(void)
   delay(500);
 
   Wire.begin(); // begin I2C communication
-
+  // I2C speed set to 400kHz to reduce time needed 
+  // to process magnetic sensors
+  Wire.setClock(400000);
 
   // initialize sensor 1
   status_sensor1 = sensor1.init(LOW); // address = 0x1F
@@ -299,11 +301,18 @@ void communicate(void)
 
     case COM_GET_STATUS_STATE:
 
-      sensor1.update();
-      sensor2.update();
-      //Serial.println(100*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.y = (int32_t)(100*atan(sensor1.m_dBx/sensor1.m_dBy));
-      current_encoder_value.x = (int32_t)(100*atan(sensor2.m_dBx/sensor2.m_dBy));
+      sensor1.update(sensor1_calibration_data.offsetx,
+                     sensor1_calibration_data.offsety, 
+                     sensor1_calibration_data.amplitudex, 
+                     sensor1_calibration_data.amplitudey);
+                     
+      sensor2.update(sensor2_calibration_data.offsetx,
+                     sensor2_calibration_data.offsety, 
+                     sensor2_calibration_data.amplitudex, 
+                     sensor2_calibration_data.amplitudey);
+                     
+      current_encoder_value.x = (int32_t)(100*sensor1.m_dPhi_xy); //angle from sensor1
+      current_encoder_value.y = (int32_t)(100*sensor2.m_dPhi_xy); //angle from sensor2
       /* Init for sending message */
       message_init(&msg_send);
       message_tlv_add_reply(&msg_send, REPLY_STATUS_REPORT);
