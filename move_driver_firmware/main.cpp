@@ -502,6 +502,7 @@ void test_homing_and_calibration(void)
           Serial.print(",");
           Serial.print(i);
           Serial.println(",");
+          delay(3);
         }
       }
   
@@ -533,6 +534,7 @@ void test_homing_and_calibration(void)
           Serial.print(",");
           Serial.print(y);
           Serial.println(",");
+          delay(3);
         }
       }
 
