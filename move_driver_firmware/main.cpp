@@ -443,6 +443,7 @@ void test_homing_and_calibration(void)
   switch (homing_state)
   {
     case HOMING_START:
+      Serial.println("Start homing procedure");
       stepper1.moveTo(MOTOR_X_HOMING_POSITION);
       stepper2.moveTo(MOTOR_Y_HOMING_POSITION);
       do_homing = true;
@@ -463,6 +464,7 @@ void test_homing_and_calibration(void)
       
       if ((stepper1.currentPosition() >= -9000) && (stepper2.currentPosition() >= -9000))
       {
+        Serial.println("Start reading sensors");
         homing_state = HOMING_READ_SENSORS;
         stepper1_current_position_previous = -4096;
         stepper2_current_position_previous = -4096;
