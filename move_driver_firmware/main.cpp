@@ -115,7 +115,8 @@ tlv_motor_position_t position_test;
 void init_mcu(void)
 {
   // begin serial communication
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(9600);
   //Serial.println("Start");
   pinMode(unused_gpio_pin, OUTPUT);
   //debugSerial.begin(115200);
@@ -502,10 +503,9 @@ void test_homing_and_calibration(void)
           Serial.print(",");
           Serial.print(i);
           Serial.println(",");
-          delay(3);
         }
       }
-  
+ 
       if (stepper2.currentPosition() >= -4096)
       {
         if (stepper2_current_position_previous != stepper2.currentPosition())
@@ -534,7 +534,6 @@ void test_homing_and_calibration(void)
           Serial.print(",");
           Serial.print(y);
           Serial.println(",");
-          delay(3);
         }
       }
 
@@ -546,7 +545,15 @@ void test_homing_and_calibration(void)
       break;
 
     case HOMING_IDLE:
-     
+      //repeat the test when 'a' received over serial
+      if (Serial.available())
+      {
+        if (Serial.read() == 'a')
+        {
+          homing_state = HOMING_START;
+        }
+      }
+      
       break;
   }
 }
