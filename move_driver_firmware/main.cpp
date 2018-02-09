@@ -115,7 +115,8 @@ tlv_motor_position_t position_test;
 void init_mcu(void)
 {
   // begin serial communication
-  Serial.begin(115200);
+  //Serial.begin(115200);
+  Serial.begin(57600);
   //Serial.println("Start");
   pinMode(unused_gpio_pin, OUTPUT);
   //debugSerial.begin(115200);
