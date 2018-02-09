@@ -474,7 +474,7 @@ void test_homing_and_calibration(void)
       break;
 
     case HOMING_READ_SENSORS:
-
+/*
       if (stepper1.currentPosition() >= -4096)
       {
         if (stepper1_current_position_previous != stepper1.currentPosition())
@@ -495,19 +495,19 @@ void test_homing_and_calibration(void)
           Serial.print(sensor1.m_dPhi_xy);
           Serial.print(",");
           Serial.print(stepper1.currentPosition());
-          /*
+          
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
-          */
+          
           Serial.print(",");
           Serial.print(i);
           Serial.println(",");
         }
       }
-/* 
+*/       
       if (stepper2.currentPosition() >= -4096)
       {
         if (stepper2_current_position_previous != stepper2.currentPosition())
@@ -519,11 +519,13 @@ void test_homing_and_calibration(void)
             y++;
           }
 
+          /*          
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
           Serial.print(",");
+          */
           Serial.print("S2:");
           Serial.print(",");
           Serial.print(sensor2.m_dBx);
@@ -538,7 +540,7 @@ void test_homing_and_calibration(void)
           Serial.println(",");
         }
       }
-*/
+
       if ((stepper1.currentPosition() == 0) && (stepper2.currentPosition() == 0))
       {
         homing_state = HOMING_IDLE;
