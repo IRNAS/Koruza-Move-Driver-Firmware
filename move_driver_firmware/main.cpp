@@ -480,15 +480,11 @@ void test_homing_and_calibration(void)
         {
           int i = 0;
           stepper1_current_position_previous = stepper1.currentPosition();
-          //while (sensor1.update(0, 0.39, 29.2, 11.86))
-          //while (sensor1.update(0, 0, 1, 1))
-          while (sensor1.update(-0.05, 0.345, 29.55, 11.905))
+          //while (sensor1.update(0, 0, 1, 1)) //No Calibration
+          //while (sensor1.update(-0.635, -0.195, 38.075, 3.135)) //local
+          while (sensor1.update(-0.05, 0.345, 29.55, 11.905)) //@ 10.254.169.109
           {
             i++;
-            if (i >= 3)
-            {
-              break;
-            }
           }
           
           Serial.print("S1:");
@@ -517,15 +513,11 @@ void test_homing_and_calibration(void)
         {
           int y = 0; 
           stepper2_current_position_previous = stepper2.currentPosition();
-          //while (sensor2.update(-0.78, 0.685, 36.26, 5.485))
-          //while (sensor2.update(0, 0, 1, 1))
-          while (sensor2.update(-1.03, 0.15, 36.6, 4.85))
+          //while (sensor2.update(0, 0, 1, 1)) //No Calibration
+          //while (sensor2.update(0.735, 0.05, 38.075, 6.03)) //local
+          while (sensor2.update(-1.03, 0.15, 36.6, 4.85)) //@ 10.254.169.109
           {
             y++;
-            if (y >= 3)
-            {
-              break;
-            }
           }
        
           Serial.print(",");
