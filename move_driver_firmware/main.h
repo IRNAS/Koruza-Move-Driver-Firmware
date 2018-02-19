@@ -60,8 +60,14 @@ typedef struct {
   double amplitudey;
 } calibration_data_t;
 
-const calibration_data_t sensor1_calibration_data = {0, 0.39, 29.2,  11.86};
-const calibration_data_t sensor2_calibration_data = {-0.78, 0.685, 36.26, 5.485};
+//Calibration data
+//{0, 0, 1, 1} means claibration is not used.
+//Substitute with correct values of Ox, Oy, Ax and Ay. 
+const calibration_data_t sensor1_calibration_data = {0, 0, 1, 1};
+const calibration_data_t sensor2_calibration_data = {0, 0, 1, 1};
+//Example:
+//const calibration_data_t sensor1_calibration_data = {0, 0.39, 29.2,  11.86};
+//const calibration_data_t sensor2_calibration_data = {-0.78, 0.685, 36.26, 5.485};
 
 extern volatile koruza_move_t koruza_move; 
 
