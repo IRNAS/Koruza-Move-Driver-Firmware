@@ -1,0 +1,55 @@
+Manual calibration steps:
+1) Download code from Koruza-Move-Driver-Firmware, branch feature/calibration to the Koruza Move Driver.
+2) Capture values from serial port (115200), which are already formated as CSV. 
+3) Calculate Ox, Oy, Ax, Ay as described below in calibration procedure. 
+4) Change FW so that calculated values are used. Function for reading sensors should be called as follows: 
+sensor1.update(Ox, Oy, Ax, Ay)
+
+Calibration Procedure
+Full revolution is needed in order to get maximum and minimum values of Bx and By.
+1) Offset compensation - for each value of Bx and By offset value must be subtracted.
+Offsets are calculated as:
+Ox = (Bx,max + Bx,min) / 2
+Oy = (By,man + By,min) / 2
+Offset values are subtracted from current reading of Bx and By:
+Bx,offset = Bx - Ox
+By,offset = By - Oy
+2) Amplitude compensation - values of Bx and By have to be normalized by using amplitude values
+Amplitude values are calculated as:
+Ax = (Bx,max - Bx,min) / 2
+Ay = (By,max - By,min) / 2
+Amplitude values are applied to all Bx and By values already offset calibrated:
+Bx,calibrated = Bx,offset / Ax
+By,calibrated = By,offset / Ay
+3) Phase compensation - After offset and amplitude calibration, angle in radians is calculated by using arctan function
+and Bx/By values. To compensate phase error, subtract mean angle from the 0 degrees sensor's reference. 
+phase = SUM(angles from 0 - 360 degrees) / 360
+NOTE: Further understanding needed for this point.
+4) Temperature compensation - Temperature compensation is not done in our case.
+
+Code which can be used for reading raw values of Bx and By can be found on the repository:
+https://github.com/IRNAS/Koruza-Move-Driver-Firmware.git
+On branch feature/calibration, commit ID:89670540ff870dacaa425d103fbfeea061832e5d
+In order to start code execution, character 'a' should be sent over serial. This is added in order to control start of
+code execution to avoid possible loss of data.
+Driver returns data in followin format:
+S1:,Bx,By,arctan(Bx/By),stepper1.currentPosition,S2:,Bx,By,arctan(Bx,By),stepper2.currentPosition,number_of_reads_before_data_from_sensor_is_valid
+Data from each sensor will be given in alternating fashion, so number_of_reads_before_data_from_sensor_is_valid is
+unique for each sensor. 
+
+After calibration is done, angle values for one full circle should be aquired (with calibration data used). 
+Best during homing procedure, during last full circle. 
+Then values of angle for 4096 steps would be captured. That data can be used to create lookup table and place it
+in code memeory. 
+Code from feature/calibration branch can be used. It requires modification with correct calibration data for both
+sensors, which is calculated during previous step. Then only required fields for the lookup table from CSV file can be
+used.  
+
+Issues
+1) Repeatability of the data - Readings from the sensors are not unique when reading several values from the same
+position. 
+2) Variation in data readings from the sensors - If five consecutive reads are done in certain position, values can
+differ for up to 0.25 radians. 
+
+One difference to the Infineon 2GO Kit is position of the sensor with respect to magnet. Of course, magnets might be
+different.  
