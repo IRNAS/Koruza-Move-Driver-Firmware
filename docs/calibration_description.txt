@@ -32,18 +32,19 @@ https://github.com/IRNAS/Koruza-Move-Driver-Firmware.git
 On branch feature/calibration, commit ID:89670540ff870dacaa425d103fbfeea061832e5d
 In order to start code execution, character 'a' should be sent over serial. This is added in order to control start of
 code execution to avoid possible loss of data.
-Driver returns data in followin format:
+Driver returns data in following format:
 S1:,Bx,By,arctan(Bx/By),stepper1.currentPosition,S2:,Bx,By,arctan(Bx,By),stepper2.currentPosition,number_of_reads_before_data_from_sensor_is_valid
 Data from each sensor will be given in alternating fashion, so number_of_reads_before_data_from_sensor_is_valid is
 unique for each sensor. 
 
-After calibration is done, angle values for one full circle should be aquired (with calibration data used). 
+After calibration is done, angle values for one full circle should be acquired (with calibration data used). 
 Best during homing procedure, during last full circle. 
 Then values of angle for 4096 steps would be captured. That data can be used to create lookup table and place it
-in code memeory. 
+in code memory. 
 Code from feature/calibration branch can be used. It requires modification with correct calibration data for both
 sensors, which is calculated during previous step. Then only required fields for the lookup table from CSV file can be
-used.  
+used.
+After extensive testing, conclusion is that it is best to take 5 full circles, discard maximum and minimum values and then find average of the rest 3 values. That value should be used as entry for lookup table. 
 
 Issues
 1) Repeatability of the data - Readings from the sensors are not unique when reading several values from the same
