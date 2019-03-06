@@ -191,7 +191,7 @@ static bool runm(AccelStepper *stepper, Switch *sw)
 static bool homem(AccelStepper *stepper, Switch *sw){
 
     /* TODO: set define for homing position */
-    stepper->setCurrentPosition(-15000);
+    stepper->setCurrentPosition(-12500);
     stepper->setMaxSpeed(1000);
     stepper->setSpeed(500);
     stepper->setAcceleration(500);
